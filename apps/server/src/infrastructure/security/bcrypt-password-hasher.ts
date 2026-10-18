@@ -1,11 +1,11 @@
-import argon2 from "argon2";
+import bcrypt from "bcrypt";
 import type { PasswordHasher } from "../../application/interfaces/password-hasher.js";
 
-export class Argon2PasswordHasher implements PasswordHasher {
+export class BcryptPasswordHasher implements PasswordHasher {
+  private readonly saltRounds = 12;
+
   async hash(password: string): Promise<string> {
-    return argon2.hash(password, {
-      type: argon2.argon2id,
-    });
+    return bcrypt.hash(password, this.saltRounds);
   }
 
   async verify(
@@ -13,7 +13,7 @@ export class Argon2PasswordHasher implements PasswordHasher {
     plainPassword: string,
   ): Promise<boolean> {
     try {
-      return await argon2.verify(passwordHash, plainPassword);
+      return await bcrypt.compare(plainPassword, passwordHash);
     } catch {
       return false;
     }

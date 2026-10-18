@@ -6,10 +6,14 @@ import { GetOrganizationByIdUseCase } from "../application/use-cases/get-organiz
 import { CreateMembershipUseCase } from "../application/use-cases/create-membership.use-case.js";
 import { MongoUserRepository } from "../infrastructure/database/repositories/mongo-user.repository.js";
 import { RegisterUserUseCase } from "../application/use-cases/register-user.use-case.js";
+import { LoginUserUseCase } from "../application/use-cases/login-user.use-case.js";
+import { JwtTokenService } from "../infrastructure/security/jwt-token.service.js";
+
 const organizationRepository = new MongoOrganizationRepository();
 const membershipRepository = new MongoMembershipRepository();
 
 const userRepository = new MongoUserRepository();
+const tokenService = new JwtTokenService();
 const passwordHasher = new BcryptPasswordHasher();
 
 export const registerUserUseCase = new RegisterUserUseCase(
@@ -28,3 +32,10 @@ export const createMembershipUseCase = new CreateMembershipUseCase(
   membershipRepository,
   organizationRepository,
 );
+
+export const loginUserUseCase = new LoginUserUseCase(
+  userRepository,
+  passwordHasher,
+);
+
+export {tokenService}

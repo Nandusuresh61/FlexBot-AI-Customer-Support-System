@@ -3,18 +3,15 @@ import cors from "cors";
 import helmet from "helmet";
 import { notFoundMiddleware } from "./presentation/middlewares/not-found.middleware";
 import { errorMiddleware } from "./presentation/middlewares/error.middleware";
-
+import organizationRouter from "./presentation/routes/organization.routes.js";
 const app = express();
 
 app.use(helmet());
 app.use(cors());
 app.use(express.json({ limit: "1mb" }));
 
-//Handle requests to undefined routes
-app.use(notFoundMiddleware);
-//Handle error from the application.
-app.use(errorMiddleware);
 
+app.use("/api/v1/organizations", organizationRouter);
 app.get("/api/v1/health", (_req, res) => {
   res.status(200).json({
     success: true,
@@ -22,5 +19,11 @@ app.get("/api/v1/health", (_req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+//Handle requests to undefined routes
+app.use(notFoundMiddleware);
+//Handle error from the application.
+app.use(errorMiddleware);
+
 
 export default app;

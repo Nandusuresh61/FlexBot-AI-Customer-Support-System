@@ -5,7 +5,7 @@ import { notFoundMiddleware } from "./presentation/middlewares/not-found.middlew
 import { errorMiddleware } from "./presentation/middlewares/error.middleware";
 import organizationRouter from "./presentation/routes/organization.routes.js";
 import authRouter from "./presentation/routes/auth.routes.js";
-
+import cookieParser from "cookie-parser";
 
 
 
@@ -15,6 +15,7 @@ const app = express();
 app.use(helmet());
 app.use(cors());
 app.use(express.json({ limit: "1mb" }));
+app.use(cookieParser());
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/organizations", organizationRouter);

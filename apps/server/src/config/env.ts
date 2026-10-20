@@ -21,6 +21,13 @@ const envSchema = z.object({
   JWT_AUDIENCE: z.string().min(1).default("flexbot-client"),
 
   JWT_ACCESS_EXPIRES_IN: z.string().default("15m"),
+
+  REFRESH_TOKEN_EXPIRES_IN_DAYS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .max(30)
+    .default(7),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

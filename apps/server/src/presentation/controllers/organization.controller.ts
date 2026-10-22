@@ -8,15 +8,25 @@ import {
   createOrganizationUseCase,
   getOrganizationByIdUseCase,
 } from "../../composition/container.js";
+import { AuthenticatedRequest } from "../middlewares/auth.middleware.js";
 
 export async function createOrganizationController(
-  req: Request,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction,
 ): Promise<void> {
   try {
+    if (!req.auth?.userId) {
+      res.status(401).json({
+        success: false,
+        message: "Authentication required",
+      });
+      return;
+    }
+
     const organization = await createOrganizationUseCase.execute(
       req.body,
+      req.auth.userId,
     );
 
     res.status(201).json({

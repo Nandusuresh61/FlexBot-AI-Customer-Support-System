@@ -9,23 +9,39 @@ import type {
   OrganizationRepository,
   CreateOrganizationInput,
 } from "../../src/domain/repositories/organization.repository.js";
+import type {
+  MembershipRepository,
+} from "../../src/domain/repositories/membership.repository.js";
 import { CreateOrganizationUseCase } from "../../src/application/use-cases/create-organization.use-case.js";
 
 describe("CreateOrganizationUseCase", () => {
-  let repository: OrganizationRepository;
+  let organizationRepository: OrganizationRepository;
+  let membershipRepository: MembershipRepository;
   let useCase: CreateOrganizationUseCase;
 
+  const creatorUserId = "user-123";
+
   beforeEach(() => {
-    repository = {
+    organizationRepository = {
       create: vi.fn(),
       findById: vi.fn(),
       findBySlug: vi.fn(),
     };
 
-    useCase = new CreateOrganizationUseCase(repository);
+    membershipRepository = {
+      create: vi.fn(),
+      findById: vi.fn(),
+      findByUserAndOrganization: vi.fn(),
+      findAllByOrganization: vi.fn(),
+    };
+
+    useCase = new CreateOrganizationUseCase(
+      organizationRepository,
+      membershipRepository,
+    );
   });
 
-  it("creates an organization with valid input", async () => {
+  it("creates an organization and assigns the creator as ORG_ADMIN", async () => {
     const input: CreateOrganizationInput = {
       name: "Acme Support",
       slug: "acme-support",
@@ -40,13 +56,36 @@ describe("CreateOrganizationUseCase", () => {
       updatedAt: new Date(),
     });
 
-    vi.mocked(repository.findBySlug).mockResolvedValue(null);
-    vi.mocked(repository.create).mockResolvedValue(expectedOrganization);
+    vi.mocked(organizationRepository.findBySlug).mockResolvedValue(null);
+    vi.mocked(organizationRepository.create).mockResolvedValue(
+      expectedOrganization,
+    );
+    vi.mocked(membershipRepository.create).mockResolvedValue(
+      {
+        id: "membership-123",
+        userId: creatorUserId,
+        organizationId: expectedOrganization.id,
+        role: "ORG_ADMIN",
+        status: "ACTIVE",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as Awaited<ReturnType<MembershipRepository["create"]>>,
+    );
 
-    const result = await useCase.execute(input);
+    const result = await useCase.execute(input, creatorUserId);
 
-    expect(repository.findBySlug).toHaveBeenCalledWith("acme-support");
-    expect(repository.create).toHaveBeenCalledWith(input);
+    expect(organizationRepository.findBySlug).toHaveBeenCalledWith(
+      "acme-support",
+    );
+
+    expect(organizationRepository.create).toHaveBeenCalledWith(input);
+
+    expect(membershipRepository.create).toHaveBeenCalledWith({
+      userId: creatorUserId,
+      organizationId: expectedOrganization.id,
+      role: "ORG_ADMIN",
+    });
+
     expect(result).toEqual(expectedOrganization);
   });
 
@@ -65,13 +104,29 @@ describe("CreateOrganizationUseCase", () => {
       updatedAt: new Date(),
     });
 
-    vi.mocked(repository.findBySlug).mockResolvedValue(null);
-    vi.mocked(repository.create).mockResolvedValue(expectedOrganization);
+    vi.mocked(organizationRepository.findBySlug).mockResolvedValue(null);
+    vi.mocked(organizationRepository.create).mockResolvedValue(
+      expectedOrganization,
+    );
+    vi.mocked(membershipRepository.create).mockResolvedValue(
+      {
+        id: "membership-123",
+        userId: creatorUserId,
+        organizationId: expectedOrganization.id,
+        role: "ORG_ADMIN",
+        status: "ACTIVE",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as Awaited<ReturnType<MembershipRepository["create"]>>,
+    );
 
-    await useCase.execute(input);
+    await useCase.execute(input, creatorUserId);
 
-    expect(repository.findBySlug).toHaveBeenCalledWith("acme-support");
-    expect(repository.create).toHaveBeenCalledWith({
+    expect(organizationRepository.findBySlug).toHaveBeenCalledWith(
+      "acme-support",
+    );
+
+    expect(organizationRepository.create).toHaveBeenCalledWith({
       name: "Acme Support",
       slug: "acme-support",
     });
@@ -79,14 +134,18 @@ describe("CreateOrganizationUseCase", () => {
 
   it("rejects invalid input", async () => {
     await expect(
-      useCase.execute({
-        name: "",
-        slug: "invalid slug!",
-      }),
+      useCase.execute(
+        {
+          name: "",
+          slug: "invalid slug!",
+        },
+        creatorUserId,
+      ),
     ).rejects.toThrow();
 
-    expect(repository.findBySlug).not.toHaveBeenCalled();
-    expect(repository.create).not.toHaveBeenCalled();
+    expect(organizationRepository.findBySlug).not.toHaveBeenCalled();
+    expect(organizationRepository.create).not.toHaveBeenCalled();
+    expect(membershipRepository.create).not.toHaveBeenCalled();
   });
 
   it("rejects an already-used slug", async () => {
@@ -99,20 +158,42 @@ describe("CreateOrganizationUseCase", () => {
       updatedAt: new Date(),
     });
 
-    vi.mocked(repository.findBySlug).mockResolvedValue(
+    vi.mocked(organizationRepository.findBySlug).mockResolvedValue(
       existingOrganization,
     );
 
     await expect(
-      useCase.execute({
-        name: "Another Organization",
-        slug: "acme-support",
-      }),
+      useCase.execute(
+        {
+          name: "Another Organization",
+          slug: "acme-support",
+        },
+        creatorUserId,
+      ),
     ).rejects.toMatchObject({
       message: "An organization with this slug already exists",
       statusCode: 409,
     } satisfies Partial<AppError>);
 
-    expect(repository.create).not.toHaveBeenCalled();
+    expect(organizationRepository.create).not.toHaveBeenCalled();
+    expect(membershipRepository.create).not.toHaveBeenCalled();
+  });
+
+  it("rejects creation without an authenticated creator", async () => {
+    await expect(
+      useCase.execute(
+        {
+          name: "Acme Support",
+          slug: "acme-support",
+        },
+        "",
+      ),
+    ).rejects.toMatchObject({
+      message: "Authenticated user is required",
+      statusCode: 401,
+    });
+
+    expect(organizationRepository.create).not.toHaveBeenCalled();
+    expect(membershipRepository.create).not.toHaveBeenCalled();
   });
 });

@@ -1,9 +1,13 @@
 import { z } from "zod";
+
 import { AppError } from "../../domain/errors/app-error.js";
 import type { Organization } from "../../domain/entities/organization.entity.js";
 import type {
   OrganizationRepository,
 } from "../../domain/repositories/organization.repository.js";
+import type {
+  MembershipRepository,
+} from "../../domain/repositories/membership.repository.js";
 
 export const createOrganizationSchema = z.object({
   name: z
@@ -31,9 +35,17 @@ export type CreateOrganizationInput = z.infer<
 export class CreateOrganizationUseCase {
   constructor(
     private readonly organizationRepository: OrganizationRepository,
+    private readonly membershipRepository: MembershipRepository,
   ) {}
 
-  async execute(input: CreateOrganizationInput): Promise<Organization> {
+  async execute(
+    input: CreateOrganizationInput,
+    creatorUserId: string,
+  ): Promise<Organization> {
+    if (!creatorUserId?.trim()) {
+      throw new AppError("Authenticated user is required", 401);
+    }
+
     const validatedInput = createOrganizationSchema.parse(input);
 
     const existingOrganization =
@@ -46,6 +58,15 @@ export class CreateOrganizationUseCase {
       );
     }
 
-    return this.organizationRepository.create(validatedInput);
+    const organization =
+      await this.organizationRepository.create(validatedInput);
+
+    await this.membershipRepository.create({
+      userId: creatorUserId,
+      organizationId: organization.id,
+      role: "ORG_ADMIN",
+    });
+
+    return organization;
   }
 }

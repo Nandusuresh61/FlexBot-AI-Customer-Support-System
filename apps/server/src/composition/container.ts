@@ -24,7 +24,7 @@ import { LogoutAllSessionsUseCase } from "../application/use-cases/logout-all-se
 
 
 const organizationRepository = new MongoOrganizationRepository();
-const membershipRepository = new MongoMembershipRepository();
+export const membershipRepository = new MongoMembershipRepository();
 
 const userRepository = new MongoUserRepository();
 const tokenService = new JwtTokenService();
@@ -38,6 +38,7 @@ export const registerUserUseCase = new RegisterUserUseCase(
 );
 export const createOrganizationUseCase = new CreateOrganizationUseCase(
   organizationRepository,
+  membershipRepository
 );
 
 export const getOrganizationByIdUseCase = new GetOrganizationByIdUseCase(

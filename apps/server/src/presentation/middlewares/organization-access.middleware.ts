@@ -3,7 +3,7 @@ import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../../domain/errors/app-error.js";
 import { membershipRepository } from "../../composition/container.js";
 import type { AuthenticatedRequest } from "./auth.middleware.js";
-
+import { organizationRepository } from "../../composition/container.js";
 export interface OrganizationAuthenticatedRequest extends AuthenticatedRequest {
   organizationAccess?: {
     organizationId: string;
@@ -19,7 +19,6 @@ export async function organizationAccessMiddleware(
 ): Promise<void> {
   try {
     const authenticatedReq = req as OrganizationAuthenticatedRequest;
-
     const userId = authenticatedReq.auth?.userId;
 
     if (!userId) {
@@ -27,10 +26,6 @@ export async function organizationAccessMiddleware(
     }
 
     const organizationId = req.params.organizationId;
-
-    if (!organizationId) {
-      throw new AppError("Organization ID is required", 400);
-    }
 
     if (typeof organizationId !== "string" || !organizationId.trim()) {
       throw new AppError("A valid organization ID is required", 400);
@@ -43,6 +38,21 @@ export async function organizationAccessMiddleware(
 
     if (!membership) {
       throw new AppError("You do not have access to this organization", 403);
+    }
+
+    if (membership.status !== "ACTIVE") {
+      throw new AppError("Your organization membership is suspended", 403);
+    }
+
+    const organization =
+      await organizationRepository.findById(organizationId);
+
+    if (!organization) {
+      throw new AppError("Organization not found", 404);
+    }
+
+    if (organization.status !== "ACTIVE") {
+      throw new AppError("This organization is suspended", 403);
     }
 
     authenticatedReq.organizationAccess = {

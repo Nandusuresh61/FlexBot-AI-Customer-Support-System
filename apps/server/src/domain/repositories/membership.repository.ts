@@ -17,7 +17,10 @@ export interface MembershipRepository {
     organizationId: string,
   ): Promise<Membership | null>;
 
-  findAllByOrganization(
+  findAllByOrganization(organizationId: string): Promise<Membership[]>;
+
+  suspendByIdAndOrganization(
+    membershipId: string,
     organizationId: string,
-  ): Promise<Membership[]>;
+  ): Promise<Membership | null>;
 }

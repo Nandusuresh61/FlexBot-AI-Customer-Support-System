@@ -54,13 +54,35 @@ export class MongoMembershipRepository implements MembershipRepository {
     return document ? toMembershipEntity(document) : null;
   }
 
-  async findAllByOrganization(
-    organizationId: string,
-  ): Promise<Membership[]> {
+  async findAllByOrganization(organizationId: string): Promise<Membership[]> {
     const documents = await MembershipModel.find({
       organizationId: toObjectId(organizationId),
     }).sort({ createdAt: 1 });
 
     return documents.map(toMembershipEntity);
+  }
+
+  async suspendByIdAndOrganization(
+    membershipId: string,
+    organizationId: string,
+  ): Promise<Membership | null> {
+    const document = await MembershipModel.findOneAndUpdate(
+      {
+        _id: toObjectId(membershipId),
+        organizationId: toObjectId(organizationId),
+        status: "ACTIVE",
+      },
+      {
+        $set: {
+          status: "SUSPENDED",
+        },
+      },
+      {
+        new: true,
+        runValidators: true,
+      },
+    );
+
+    return document ? toMembershipEntity(document) : null;
   }
 }

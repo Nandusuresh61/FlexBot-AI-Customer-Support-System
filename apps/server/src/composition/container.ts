@@ -12,18 +12,14 @@ import { CryptoRefreshTokenService } from "../infrastructure/security/crypto-ref
 import { CreateRefreshSessionUseCase } from "../application/use-cases/create-refresh-session.use-case.js";
 
 import { MongoRefreshSessionRepository } from "../infrastructure/database/repositories/mongo-refresh-session.repository.js";
-
+import { SuspendOrganizationMemberUseCase } from "../application/use-cases/suspend-organization-member.use-case.js";
 import { env } from "../config/env.js";
 import { RotateRefreshTokenUseCase } from "../application/use-cases/rotate-refresh-token.use-case.js";
 import { LogoutUserUseCase } from "../application/use-cases/logout-user.use-case.js";
 import { LogoutAllSessionsUseCase } from "../application/use-cases/logout-all-sessions.use-case.js";
+import { GetOrganizationMembersUseCase } from "../application/use-cases/get-organization-members.use-case.js";
 
-
-
-
-
-
-const organizationRepository = new MongoOrganizationRepository();
+export const organizationRepository = new MongoOrganizationRepository();
 export const membershipRepository = new MongoMembershipRepository();
 
 const userRepository = new MongoUserRepository();
@@ -38,16 +34,22 @@ export const registerUserUseCase = new RegisterUserUseCase(
 );
 export const createOrganizationUseCase = new CreateOrganizationUseCase(
   organizationRepository,
-  membershipRepository
+  membershipRepository,
 );
 
 export const getOrganizationByIdUseCase = new GetOrganizationByIdUseCase(
   organizationRepository,
 );
 
+export const getOrganizationMembersUseCase = new GetOrganizationMembersUseCase(
+  membershipRepository,
+  organizationRepository,
+);
+
 export const createMembershipUseCase = new CreateMembershipUseCase(
   membershipRepository,
   organizationRepository,
+  userRepository,
 );
 
 export const loginUserUseCase = new LoginUserUseCase(
@@ -81,3 +83,9 @@ export const logoutUserUseCase = new LogoutUserUseCase(
 export const logoutAllSessionsUseCase = new LogoutAllSessionsUseCase(
   refreshSessionRepository,
 );
+
+export const suspendOrganizationMemberUseCase =
+  new SuspendOrganizationMemberUseCase(
+    membershipRepository,
+    organizationRepository,
+  );

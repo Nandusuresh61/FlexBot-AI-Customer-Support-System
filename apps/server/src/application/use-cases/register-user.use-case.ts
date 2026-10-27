@@ -41,10 +41,7 @@ export class RegisterUserUseCase {
     );
 
     if (existingUser) {
-      throw new AppError(
-        "An account with this email already exists",
-        409,
-      );
+      throw new AppError("An account with this email already exists", 409);
     }
 
     const passwordHash = await this.passwordHasher.hash(
@@ -55,6 +52,8 @@ export class RegisterUserUseCase {
       name: validatedInput.name,
       email: validatedInput.email,
       passwordHash,
+      platformRole: "USER",
     });
+    
   }
 }

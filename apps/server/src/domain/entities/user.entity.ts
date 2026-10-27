@@ -1,11 +1,14 @@
 export type UserStatus = "ACTIVE" | "SUSPENDED";
 
+export type PlatformRole = "USER" | "SUPER_ADMIN";
+
 export interface UserProps {
   id: string;
   name: string;
   email: string;
   passwordHash: string;
   status: UserStatus;
+  platformRole: PlatformRole;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -16,6 +19,7 @@ export class User {
   public readonly email: string;
   public readonly passwordHash: string;
   public readonly status: UserStatus;
+  public readonly platformRole: PlatformRole;
   public readonly createdAt: Date;
   public readonly updatedAt: Date;
 
@@ -41,6 +45,7 @@ export class User {
     this.email = props.email.trim().toLowerCase();
     this.passwordHash = props.passwordHash;
     this.status = props.status;
+    this.platformRole = props.platformRole;
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
   }

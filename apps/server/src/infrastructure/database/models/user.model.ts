@@ -24,6 +24,12 @@ const userSchema = new Schema(
       required: [true, "Password hash is required"],
       select: false,
     },
+    platformRole: {
+      type: String,
+      enum: ["USER", "SUPER_ADMIN"],
+      default: "USER",
+      required: true,
+    },
 
     status: {
       type: String,

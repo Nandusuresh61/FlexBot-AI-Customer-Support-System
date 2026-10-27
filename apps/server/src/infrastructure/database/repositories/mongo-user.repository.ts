@@ -17,6 +17,7 @@ export class MongoUserRepository implements UserRepository {
         name: input.name.trim(),
         email: input.email.trim().toLowerCase(),
         passwordHash: input.passwordHash,
+        platformRole: input.platformRole,
       });
 
       // Password hash is explicitly selected below when needed.
@@ -29,10 +30,7 @@ export class MongoUserRepository implements UserRepository {
         "code" in error &&
         error.code === 11000
       ) {
-        throw new AppError(
-          "An account with this email already exists",
-          409,
-        );
+        throw new AppError("An account with this email already exists", 409);
       }
 
       throw error;
@@ -42,8 +40,7 @@ export class MongoUserRepository implements UserRepository {
   async findById(id: string): Promise<User | null> {
     const objectId = toObjectId(id);
 
-    const document = await UserModel.findById(objectId)
-      .select("+passwordHash");
+    const document = await UserModel.findById(objectId).select("+passwordHash");
 
     return document ? toUserEntity(document) : null;
   }

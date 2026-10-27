@@ -22,7 +22,7 @@ import { GetOrganizationMembersUseCase } from "../application/use-cases/get-orga
 export const organizationRepository = new MongoOrganizationRepository();
 export const membershipRepository = new MongoMembershipRepository();
 
-const userRepository = new MongoUserRepository();
+export const userRepository = new MongoUserRepository();
 const tokenService = new JwtTokenService();
 const passwordHasher = new BcryptPasswordHasher();
 

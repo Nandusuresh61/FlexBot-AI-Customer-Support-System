@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { HttpStatusCode } from "../../constants/httpStatusCode.js";
+import { AppMessage } from "../../constants/appMessage.js";
 import { AppError } from "../../domain/errors/app-error.js";
 import type { Membership } from "../../domain/entities/membership.entity.js";
 import type { MembershipRepository } from "../../domain/repositories/membership.repository.js";
@@ -20,55 +22,61 @@ export type CreateMembershipInput = z.infer<
 
 export class CreateMembershipUseCase {
   constructor(
-    private readonly membershipRepository: MembershipRepository,
-    private readonly organizationRepository: OrganizationRepository,
-    private readonly userRepository: UserRepository
+    private readonly _membershipRepository: MembershipRepository,
+    private readonly _organizationRepository: OrganizationRepository,
+    private readonly _userRepository: UserRepository,
   ) {}
 
   async execute(input: CreateMembershipInput): Promise<Membership> {
-  const validatedInput = createMembershipSchema.parse(input);
+    const validatedInput = createMembershipSchema.parse(input);
 
-  const user = await this.userRepository.findById(
-    validatedInput.userId,
-  );
-
-  if (!user) {
-    throw new AppError("User not found", 404);
-  }
-
-  if (user.status !== "ACTIVE") {
-    throw new AppError("User account is not active", 403);
-  }
-
-  const organization = await this.organizationRepository.findById(
-    validatedInput.organizationId,
-  );
-
-  if (!organization) {
-    throw new AppError("Organization not found", 404);
-  }
-
-  if (organization.status !== "ACTIVE") {
-    throw new AppError("Organization is not active", 403);
-  }
-
-  const existingMembership =
-    await this.membershipRepository.findByUserAndOrganization(
+    const user = await this._userRepository.findById(
       validatedInput.userId,
+    );
+
+    if (!user) {
+      throw new AppError(AppMessage.USER_NOT_FOUND, HttpStatusCode.NOT_FOUND);
+    }
+
+    if (user.status !== "ACTIVE") {
+      throw new AppError(AppMessage.USER_INACTIVE, HttpStatusCode.FORBIDDEN);
+    }
+
+    const organization = await this._organizationRepository.findById(
       validatedInput.organizationId,
     );
 
-  if (existingMembership) {
-    throw new AppError(
-      "This user already belongs to the organization",
-      409,
-    );
-  }
+    if (!organization) {
+      throw new AppError(
+        AppMessage.ORGANIZATION_NOT_FOUND,
+        HttpStatusCode.NOT_FOUND,
+      );
+    }
 
-  return this.membershipRepository.create({
-    userId: validatedInput.userId,
-    organizationId: validatedInput.organizationId,
-    role: "ORG_MEMBER",
-  });
-}
+    if (organization.status !== "ACTIVE") {
+      throw new AppError(
+        AppMessage.ORGANIZATION_NOT_ACTIVE,
+        HttpStatusCode.FORBIDDEN,
+      );
+    }
+
+    const existingMembership =
+      await this._membershipRepository.findByUserAndOrganization(
+        validatedInput.userId,
+        validatedInput.organizationId,
+      );
+
+    if (existingMembership) {
+      throw new AppError(
+        AppMessage.USER_ALREADY_MEMBER,
+        HttpStatusCode.CONFLICT,
+      );
+    }
+
+    return this._membershipRepository.create({
+      userId: validatedInput.userId,
+      organizationId: validatedInput.organizationId,
+      role: "ORG_MEMBER",
+    });
+  }
 }

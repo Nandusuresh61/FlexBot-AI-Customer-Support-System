@@ -18,11 +18,11 @@ export interface CreateRefreshSessionResult {
 
 export class CreateRefreshSessionUseCase {
   constructor(
-    private readonly refreshSessionRepository: RefreshSessionRepository,
-    private readonly refreshTokenService: RefreshTokenService,
-    private readonly expiresInDays: number,
+    private readonly _refreshSessionRepository: RefreshSessionRepository,
+    private readonly _refreshTokenService: RefreshTokenService,
+    private readonly _expiresInDays: number,
   ) {
-    if (!Number.isInteger(expiresInDays) || expiresInDays <= 0) {
+    if (!Number.isInteger(_expiresInDays) || _expiresInDays <= 0) {
       throw new Error("Refresh token lifetime must be a positive integer");
     }
   }
@@ -32,13 +32,13 @@ export class CreateRefreshSessionUseCase {
   ): Promise<CreateRefreshSessionResult> {
     const validatedInput = createRefreshSessionSchema.parse(input);
 
-    const generatedToken = this.refreshTokenService.generate();
+    const generatedToken = this._refreshTokenService.generate();
 
     const expiresAt = new Date(
-      Date.now() + this.expiresInDays * 24 * 60 * 60 * 1000,
+      Date.now() + this._expiresInDays * 24 * 60 * 60 * 1000,
     );
 
-    await this.refreshSessionRepository.create({
+    await this._refreshSessionRepository.create({
       userId: validatedInput.userId,
       tokenHash: generatedToken.tokenHash,
       expiresAt,

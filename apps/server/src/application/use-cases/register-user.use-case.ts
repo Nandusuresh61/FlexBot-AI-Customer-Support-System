@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { HttpStatusCode } from "../../constants/httpStatusCode.js";
+import { AppMessage } from "../../constants/appMessage.js";
 import { AppError } from "../../domain/errors/app-error.js";
 import type { User } from "../../domain/entities/user.entity.js";
 import type { UserRepository } from "../../domain/repositories/user.repository.js";
@@ -29,31 +31,34 @@ export type RegisterUserInput = z.infer<typeof registerUserSchema>;
 
 export class RegisterUserUseCase {
   constructor(
-    private readonly userRepository: UserRepository,
-    private readonly passwordHasher: PasswordHasher,
+    private readonly _userRepository: UserRepository,
+    private readonly _passwordHasher: PasswordHasher,
   ) {}
 
   async execute(input: RegisterUserInput): Promise<User> {
     const validatedInput = registerUserSchema.parse(input);
 
-    const existingUser = await this.userRepository.findByEmail(
+    const existingUser = await this._userRepository.findByEmail(
       validatedInput.email,
     );
 
     if (existingUser) {
-      throw new AppError("An account with this email already exists", 409);
+      throw new AppError(
+        AppMessage.ACCOUNT_EMAIL_EXISTS,
+        HttpStatusCode.CONFLICT,
+      );
     }
 
-    const passwordHash = await this.passwordHasher.hash(
+    const passwordHash = await this._passwordHasher.hash(
       validatedInput.password,
     );
 
-    return this.userRepository.create({
+    return this._userRepository.create({
       name: validatedInput.name,
       email: validatedInput.email,
       passwordHash,
       platformRole: "USER",
     });
-    
   }
 }
+

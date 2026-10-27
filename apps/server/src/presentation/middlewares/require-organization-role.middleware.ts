@@ -1,10 +1,9 @@
 import type { Request, Response, NextFunction } from "express";
-
 import { AppError } from "../../domain/errors/app-error.js";
+import { HttpStatusCode } from "../../constants/httpStatusCode.js";
+import { AppMessage } from "../../constants/appMessage.js";
 import type { OrganizationRole } from "../../domain/entities/membership.entity.js";
-import type {
-  OrganizationAuthenticatedRequest,
-} from "./organization-access.middleware.js";
+import type { OrganizationAuthenticatedRequest } from "./organization-access.middleware.js";
 
 export function requireOrganizationRole(
   ...allowedRoles: OrganizationRole[]
@@ -21,12 +20,22 @@ export function requireOrganizationRole(
       authenticatedReq.organizationAccess;
 
     if (!organizationAccess) {
-      next(new AppError("Organization access must be verified first", 403));
+      next(
+        new AppError(
+          AppMessage.ORGANIZATION_ACCESS_REQUIRED,
+          HttpStatusCode.FORBIDDEN,
+        ),
+      );
       return;
     }
 
     if (!allowedRoles.includes(organizationAccess.role)) {
-      next(new AppError("You do not have permission to perform this action", 403));
+      next(
+        new AppError(
+          AppMessage.ORGANIZATION_PERMISSION_DENIED,
+          HttpStatusCode.FORBIDDEN,
+        ),
+      );
       return;
     }
 

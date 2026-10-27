@@ -18,6 +18,9 @@ import { RotateRefreshTokenUseCase } from "../application/use-cases/rotate-refre
 import { LogoutUserUseCase } from "../application/use-cases/logout-user.use-case.js";
 import { LogoutAllSessionsUseCase } from "../application/use-cases/logout-all-sessions.use-case.js";
 import { GetOrganizationMembersUseCase } from "../application/use-cases/get-organization-members.use-case.js";
+import { AuthController } from "../presentation/controllers/auth.controller.js";
+import { OrganizationController } from "../presentation/controllers/organization.controller.js";
+import { MembershipController } from "../presentation/controllers/membership.controller.js";
 
 export const organizationRepository = new MongoOrganizationRepository();
 export const membershipRepository = new MongoMembershipRepository();
@@ -89,3 +92,24 @@ export const suspendOrganizationMemberUseCase =
     membershipRepository,
     organizationRepository,
   );
+
+export const authController = new AuthController(
+  registerUserUseCase,
+  loginUserUseCase,
+  tokenService,
+  createRefreshSessionUseCase,
+  rotateRefreshTokenUseCase,
+  logoutUserUseCase,
+  logoutAllSessionsUseCase,
+);
+
+export const organizationController = new OrganizationController(
+  createOrganizationUseCase,
+  getOrganizationByIdUseCase,
+);
+
+export const membershipController = new MembershipController(
+  createMembershipUseCase,
+  getOrganizationMembersUseCase,
+  suspendOrganizationMemberUseCase,
+);

@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { HttpStatusCode } from "../../constants/httpStatusCode.js";
+import { AppMessage } from "../../constants/appMessage.js";
 import { AppError } from "../../domain/errors/app-error.js";
 import type { Organization } from "../../domain/entities/organization.entity.js";
 import type {
@@ -34,8 +36,8 @@ export type CreateOrganizationInput = z.infer<
 
 export class CreateOrganizationUseCase {
   constructor(
-    private readonly organizationRepository: OrganizationRepository,
-    private readonly membershipRepository: MembershipRepository,
+    private readonly _organizationRepository: OrganizationRepository,
+    private readonly _membershipRepository: MembershipRepository,
   ) {}
 
   async execute(
@@ -43,25 +45,28 @@ export class CreateOrganizationUseCase {
     creatorUserId: string,
   ): Promise<Organization> {
     if (!creatorUserId?.trim()) {
-      throw new AppError("Authenticated user is required", 401);
+      throw new AppError(
+        AppMessage.AUTHENTICATED_USER_REQUIRED,
+        HttpStatusCode.UNAUTHORIZED,
+      );
     }
 
     const validatedInput = createOrganizationSchema.parse(input);
 
     const existingOrganization =
-      await this.organizationRepository.findBySlug(validatedInput.slug);
+      await this._organizationRepository.findBySlug(validatedInput.slug);
 
     if (existingOrganization) {
       throw new AppError(
-        "An organization with this slug already exists",
-        409,
+        AppMessage.ORGANIZATION_SLUG_EXISTS,
+        HttpStatusCode.CONFLICT,
       );
     }
 
     const organization =
-      await this.organizationRepository.create(validatedInput);
+      await this._organizationRepository.create(validatedInput);
 
-    await this.membershipRepository.create({
+    await this._membershipRepository.create({
       userId: creatorUserId,
       organizationId: organization.id,
       role: "ORG_ADMIN",

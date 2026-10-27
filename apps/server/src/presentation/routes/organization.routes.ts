@@ -1,24 +1,25 @@
 import { Router } from "express";
 import {
-  createOrganizationController,
-  getOrganizationByIdController,
-} from "../controllers/organization.controller";
-import { authMiddleware } from "../middlewares/auth.middleware";
-import { organizationAccessMiddleware } from "../middlewares/organization-access.middleware";
+  organizationController,
+  membershipController,
+} from "../../composition/container.js";
+import { authMiddleware } from "../middlewares/auth.middleware.js";
+import { organizationAccessMiddleware } from "../middlewares/organization-access.middleware.js";
+import { requireOrganizationRole } from "../middlewares/require-organization-role.middleware.js";
 
-import { requireOrganizationRole } from "../middlewares/require-organization-role.middleware";
-import { createOrganizationMemberController } from "../controllers/membership.controller";
-import { getOrganizationMembersController } from "../controllers/organization-members.controller";
-import { suspendOrganizationMemberController } from "../controllers/suspend-organization-member.controller.js";
 const organizationRouter = Router();
 
-organizationRouter.post("/", authMiddleware, createOrganizationController);
+organizationRouter.post(
+  "/",
+  authMiddleware,
+  organizationController.create,
+);
 
 organizationRouter.get(
   "/:organizationId",
   authMiddleware,
   organizationAccessMiddleware,
-  getOrganizationByIdController,
+  organizationController.getById,
 );
 
 organizationRouter.post(
@@ -26,14 +27,14 @@ organizationRouter.post(
   authMiddleware,
   organizationAccessMiddleware,
   requireOrganizationRole("ORG_ADMIN"),
-  createOrganizationMemberController,
+  membershipController.createMember,
 );
 
 organizationRouter.get(
   "/:organizationId/members",
   authMiddleware,
   organizationAccessMiddleware,
-  getOrganizationMembersController,
+  membershipController.getMembers,
 );
 
 organizationRouter.delete(
@@ -41,7 +42,7 @@ organizationRouter.delete(
   authMiddleware,
   organizationAccessMiddleware,
   requireOrganizationRole("ORG_ADMIN"),
-  suspendOrganizationMemberController,
+  membershipController.suspendMember,
 );
 
 export default organizationRouter;

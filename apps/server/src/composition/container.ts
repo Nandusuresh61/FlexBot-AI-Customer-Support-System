@@ -31,9 +31,13 @@ import { MongoApiKeyRepository } from "../infrastructure/database/repositories/m
 import { ApiKeyGenerator } from "../infrastructure/security/api-key-generator.js";
 export const organizationRepository = new MongoOrganizationRepository();
 export const membershipRepository = new MongoMembershipRepository();
+import { ExternalController } from "../presentation/controllers/external.controller.js";
 
-const apiKeyRepository = new MongoApiKeyRepository();
-const apiKeyGenerator = new ApiKeyGenerator();
+
+export const externalController = new ExternalController();
+
+export const apiKeyRepository = new MongoApiKeyRepository();
+export const apiKeyGenerator = new ApiKeyGenerator();
 export const userRepository = new MongoUserRepository();
 const tokenService = new JwtTokenService();
 const passwordHasher = new BcryptPasswordHasher();

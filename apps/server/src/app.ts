@@ -10,6 +10,7 @@ import authRouter from "./presentation/routes/auth.routes.js";
 import { HttpStatusCode } from "./constants/httpStatusCode.js";
 import { AppMessage } from "./constants/appMessage.js";
 import { ResponseHandler } from "./presentation/utils/responseHandler.js";
+import externalRoutes from "./presentation/routes/external.routes.js";
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use(cookieParser());
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/organizations", organizationRouter);
+app.use("/api/v1/external", externalRoutes);
 
 app.get("/api/v1/health", (_req, res) => {
   ResponseHandler.success(

@@ -60,7 +60,7 @@ export const AppMessage = {
   API_KEY_ALREADY_REVOKED: "API key is already revoked",
   API_KEY_GENERATION_FAILED: "API key generation failed",
   INVALID_API_KEY: "Invalid or expired API key",
-
+  API_KEY_AUTH_SUCCESS: "API key authenticated successfully",
   // Common & Errors
   VALIDATION_FAILED: "Validation failed",
   INTERNAL_SERVER_ERROR: "Internal server error",

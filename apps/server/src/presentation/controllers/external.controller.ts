@@ -27,7 +27,7 @@ export class ExternalController {
       ResponseHandler.success(
         res,
         HttpStatusCode.OK,
-        "API key authenticated successfully",
+        AppMessage.API_KEY_AUTH_SUCCESS,
         {
           organizationId: apiKeyAuth.organizationId,
           apiKeyId: apiKeyAuth.apiKeyId,

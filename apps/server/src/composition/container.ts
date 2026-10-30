@@ -22,9 +22,18 @@ import { AuthController } from "../presentation/controllers/auth.controller.js";
 import { OrganizationController } from "../presentation/controllers/organization.controller.js";
 import { MembershipController } from "../presentation/controllers/membership.controller.js";
 
+import { CreateApiKeyUseCase } from "../application/use-cases/create-api-key.use-case.js";
+import { ListApiKeysUseCase } from "../application/use-cases/list-api-keys.use-case.js";
+import { RevokeApiKeyUseCase } from "../application/use-cases/revoke-api-key.use-case.js";
+
+import { ApiKeyController } from "../presentation/controllers/api-key.controller.js";
+import { MongoApiKeyRepository } from "../infrastructure/database/repositories/mongo-api-key.repository.js";
+import { ApiKeyGenerator } from "../infrastructure/security/api-key-generator.js";
 export const organizationRepository = new MongoOrganizationRepository();
 export const membershipRepository = new MongoMembershipRepository();
 
+const apiKeyRepository = new MongoApiKeyRepository();
+const apiKeyGenerator = new ApiKeyGenerator();
 export const userRepository = new MongoUserRepository();
 const tokenService = new JwtTokenService();
 const passwordHasher = new BcryptPasswordHasher();
@@ -112,4 +121,25 @@ export const membershipController = new MembershipController(
   createMembershipUseCase,
   getOrganizationMembersUseCase,
   suspendOrganizationMemberUseCase,
+);
+export const createApiKeyUseCase = new CreateApiKeyUseCase(
+  apiKeyRepository,
+  organizationRepository,
+  apiKeyGenerator,
+);
+
+export const listApiKeysUseCase = new ListApiKeysUseCase(
+  apiKeyRepository,
+  organizationRepository,
+);
+
+export const revokeApiKeyUseCase = new RevokeApiKeyUseCase(
+  apiKeyRepository,
+  organizationRepository,
+);
+
+export const apiKeyController = new ApiKeyController(
+  createApiKeyUseCase,
+  listApiKeysUseCase,
+  revokeApiKeyUseCase,
 );

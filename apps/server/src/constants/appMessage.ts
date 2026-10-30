@@ -33,7 +33,8 @@ export const AppMessage = {
   ORGANIZATION_ID_REQUIRED: "A valid organization ID is required",
   ORGANIZATION_ACCESS_DENIED: "You do not have access to this organization",
   ORGANIZATION_ACCESS_REQUIRED: "Organization access must be verified first",
-  ORGANIZATION_PERMISSION_DENIED: "You do not have permission to perform this action",
+  ORGANIZATION_PERMISSION_DENIED:
+    "You do not have permission to perform this action",
 
   // Organization Memberships
   MEMBER_ADDED: "Organization member added successfully",
@@ -42,16 +43,29 @@ export const AppMessage = {
   MEMBERSHIP_SUSPENDED_ALREADY: "Membership is already suspended",
   MEMBERSHIP_SUSPENDED: "Your organization membership is suspended",
   MEMBERSHIP_NOT_FOUND: "Membership not found in this organization",
-  CANNOT_SUSPEND_LAST_ADMIN: "Cannot suspend the last active organization admin",
+  CANNOT_SUSPEND_LAST_ADMIN:
+    "Cannot suspend the last active organization admin",
   MEMBERSHIP_COULD_NOT_BE_SUSPENDED: "Membership could not be suspended",
   USER_ALREADY_MEMBER: "This user already belongs to the organization",
   INVALID_ORG_MEMBER_IDS: "Valid organization and membership IDs are required",
+
+  // API Key Management
+  API_KEY_CREATED: "API key created successfully",
+  API_KEYS_RETRIEVED: "API keys retrieved successfully",
+  API_KEY_REVOKED: "API key revoked successfully",
+  API_KEY_NAME_REQUIRED: "API key name is required",
+  API_KEY_TYPE_INVALID: "Invalid API key type",
+  API_KEY_EXPIRATION_INVALID: "API key expiration must be a future date",
+  API_KEY_NOT_FOUND: "API key not found",
+  API_KEY_ALREADY_REVOKED: "API key is already revoked",
+  API_KEY_GENERATION_FAILED: "API key generation failed",
 
   // Common & Errors
   VALIDATION_FAILED: "Validation failed",
   INTERNAL_SERVER_ERROR: "Internal server error",
   UNEXPECTED_ERROR: "An unexpected error occurred",
-  ROUTE_NOT_FOUND: (method: string, url: string) => `Route not found: ${method} ${url}`,
+  ROUTE_NOT_FOUND: (method: string, url: string) =>
+    `Route not found: ${method} ${url}`,
   API_RUNNING: "FlexBot API is running",
 } as const;
 

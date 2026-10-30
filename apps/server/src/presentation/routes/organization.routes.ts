@@ -6,14 +6,10 @@ import {
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 import { organizationAccessMiddleware } from "../middlewares/organization-access.middleware.js";
 import { requireOrganizationRole } from "../middlewares/require-organization-role.middleware.js";
-
+import apiKeyRoutes from "./api-key.routes.js";
 const organizationRouter = Router();
 
-organizationRouter.post(
-  "/",
-  authMiddleware,
-  organizationController.create,
-);
+organizationRouter.post("/", authMiddleware, organizationController.create);
 
 organizationRouter.get(
   "/:organizationId",
@@ -45,4 +41,5 @@ organizationRouter.delete(
   membershipController.suspendMember,
 );
 
+organizationRouter.use("/:organizationId/api-keys", apiKeyRoutes);
 export default organizationRouter;

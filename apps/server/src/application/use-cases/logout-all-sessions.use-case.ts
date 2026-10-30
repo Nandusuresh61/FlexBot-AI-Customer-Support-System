@@ -2,11 +2,11 @@ import type { RefreshSessionRepository } from "../../domain/repositories/refresh
 
 export class LogoutAllSessionsUseCase {
   constructor(
-    private readonly refreshSessionRepository: RefreshSessionRepository,
+    private readonly _refreshSessionRepository: RefreshSessionRepository,
   ) {}
 
   async execute(userId: string): Promise<void> {
-    await this.refreshSessionRepository.revokeAllByUserId(
+    await this._refreshSessionRepository.revokeAllByUserId(
       userId,
       new Date(),
     );

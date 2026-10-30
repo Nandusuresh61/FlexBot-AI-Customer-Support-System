@@ -1,38 +1,39 @@
-import type {
-  Request,
-  Response,
-  NextFunction,
-} from "express";
+import type { Request, Response } from "express";
+import { HttpStatusCode } from "../../constants/httpStatusCode.js";
+import { AppMessage } from "../../constants/appMessage.js";
+import { ResponseHandler } from "../utils/responseHandler.js";
+import { asyncHandler } from "../middlewares/asyncHandler.js";
+import type { AuthenticatedRequest } from "../middlewares/auth.middleware.js";
 
-import {
-  createOrganizationUseCase,
-  getOrganizationByIdUseCase,
-} from "../../composition/container.js";
-import { AuthenticatedRequest } from "../middlewares/auth.middleware.js";
+import type { CreateOrganizationUseCase } from "../../application/use-cases/create-organization.use-case.js";
+import type { GetOrganizationByIdUseCase } from "../../application/use-cases/get-organization-by-id.use-case.js";
 
-export async function createOrganizationController(
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction,
-): Promise<void> {
-  try {
+export class OrganizationController {
+  constructor(
+    private readonly _createOrganizationUseCase: CreateOrganizationUseCase,
+    private readonly _getOrganizationByIdUseCase: GetOrganizationByIdUseCase,
+  ) {}
+
+  create = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     if (!req.auth?.userId) {
-      res.status(401).json({
-        success: false,
-        message: "Authentication required",
-      });
+      ResponseHandler.error(
+        res,
+        HttpStatusCode.UNAUTHORIZED,
+        AppMessage.AUTH_REQUIRED,
+      );
       return;
     }
 
-    const organization = await createOrganizationUseCase.execute(
+    const organization = await this._createOrganizationUseCase.execute(
       req.body,
       req.auth.userId,
     );
 
-    res.status(201).json({
-      success: true,
-      message: "Organization created successfully",
-      data: {
+    ResponseHandler.success(
+      res,
+      HttpStatusCode.CREATED,
+      AppMessage.ORGANIZATION_CREATED,
+      {
         id: organization.id,
         name: organization.name,
         slug: organization.slug,
@@ -40,25 +41,19 @@ export async function createOrganizationController(
         createdAt: organization.createdAt,
         updatedAt: organization.updatedAt,
       },
-    });
-  } catch (error: unknown) {
-    next(error);
-  }
-}
+    );
+  });
 
-export async function getOrganizationByIdController(
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): Promise<void> {
-  try {
-    const organization = await getOrganizationByIdUseCase.execute(
+  getById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const organization = await this._getOrganizationByIdUseCase.execute(
       req.params.organizationId as string,
     );
 
-    res.status(200).json({
-      success: true,
-      data: {
+    ResponseHandler.success(
+      res,
+      HttpStatusCode.OK,
+      AppMessage.ORGANIZATION_RETRIEVED,
+      {
         id: organization.id,
         name: organization.name,
         slug: organization.slug,
@@ -66,8 +61,6 @@ export async function getOrganizationByIdController(
         createdAt: organization.createdAt,
         updatedAt: organization.updatedAt,
       },
-    });
-  } catch (error: unknown) {
-    next(error);
-  }
+    );
+  });
 }

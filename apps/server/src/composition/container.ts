@@ -18,10 +18,26 @@ import { RotateRefreshTokenUseCase } from "../application/use-cases/rotate-refre
 import { LogoutUserUseCase } from "../application/use-cases/logout-user.use-case.js";
 import { LogoutAllSessionsUseCase } from "../application/use-cases/logout-all-sessions.use-case.js";
 import { GetOrganizationMembersUseCase } from "../application/use-cases/get-organization-members.use-case.js";
+import { AuthController } from "../presentation/controllers/auth.controller.js";
+import { OrganizationController } from "../presentation/controllers/organization.controller.js";
+import { MembershipController } from "../presentation/controllers/membership.controller.js";
 
+import { CreateApiKeyUseCase } from "../application/use-cases/create-api-key.use-case.js";
+import { ListApiKeysUseCase } from "../application/use-cases/list-api-keys.use-case.js";
+import { RevokeApiKeyUseCase } from "../application/use-cases/revoke-api-key.use-case.js";
+
+import { ApiKeyController } from "../presentation/controllers/api-key.controller.js";
+import { MongoApiKeyRepository } from "../infrastructure/database/repositories/mongo-api-key.repository.js";
+import { ApiKeyGenerator } from "../infrastructure/security/api-key-generator.js";
 export const organizationRepository = new MongoOrganizationRepository();
 export const membershipRepository = new MongoMembershipRepository();
+import { ExternalController } from "../presentation/controllers/external.controller.js";
 
+
+export const externalController = new ExternalController();
+
+export const apiKeyRepository = new MongoApiKeyRepository();
+export const apiKeyGenerator = new ApiKeyGenerator();
 export const userRepository = new MongoUserRepository();
 const tokenService = new JwtTokenService();
 const passwordHasher = new BcryptPasswordHasher();
@@ -89,3 +105,45 @@ export const suspendOrganizationMemberUseCase =
     membershipRepository,
     organizationRepository,
   );
+
+export const authController = new AuthController(
+  registerUserUseCase,
+  loginUserUseCase,
+  tokenService,
+  createRefreshSessionUseCase,
+  rotateRefreshTokenUseCase,
+  logoutUserUseCase,
+  logoutAllSessionsUseCase,
+);
+
+export const organizationController = new OrganizationController(
+  createOrganizationUseCase,
+  getOrganizationByIdUseCase,
+);
+
+export const membershipController = new MembershipController(
+  createMembershipUseCase,
+  getOrganizationMembersUseCase,
+  suspendOrganizationMemberUseCase,
+);
+export const createApiKeyUseCase = new CreateApiKeyUseCase(
+  apiKeyRepository,
+  organizationRepository,
+  apiKeyGenerator,
+);
+
+export const listApiKeysUseCase = new ListApiKeysUseCase(
+  apiKeyRepository,
+  organizationRepository,
+);
+
+export const revokeApiKeyUseCase = new RevokeApiKeyUseCase(
+  apiKeyRepository,
+  organizationRepository,
+);
+
+export const apiKeyController = new ApiKeyController(
+  createApiKeyUseCase,
+  listApiKeysUseCase,
+  revokeApiKeyUseCase,
+);

@@ -1,6 +1,9 @@
 import type { Request, Response, NextFunction } from "express";
-
 import { tokenService } from "../../composition/container.js";
+import { HttpStatusCode } from "../../constants/httpStatusCode.js";
+import { AppMessage } from "../../constants/appMessage.js";
+import { ResponseHandler } from "../utils/responseHandler.js";
+import { asyncHandler } from "./asyncHandler.js";
 
 export interface AuthenticatedRequest extends Request {
   auth?: {
@@ -8,19 +11,16 @@ export interface AuthenticatedRequest extends Request {
   };
 }
 
-export async function authMiddleware(
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): Promise<void> {
-  try {
+export const authMiddleware = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const authorization = req.headers.authorization;
 
     if (!authorization) {
-      res.status(401).json({
-        success: false,
-        message: "Authentication required",
-      });
+      ResponseHandler.error(
+        res,
+        HttpStatusCode.UNAUTHORIZED,
+        AppMessage.AUTH_REQUIRED,
+      );
       return;
     }
 
@@ -31,10 +31,11 @@ export async function authMiddleware(
       !token ||
       extraParts.length > 0
     ) {
-      res.status(401).json({
-        success: false,
-        message: "Invalid authorization header",
-      });
+      ResponseHandler.error(
+        res,
+        HttpStatusCode.UNAUTHORIZED,
+        AppMessage.INVALID_AUTH_HEADER,
+      );
       return;
     }
 
@@ -45,7 +46,5 @@ export async function authMiddleware(
     };
 
     next();
-  } catch (error) {
-    next(error);
-  }
-}
+  },
+);

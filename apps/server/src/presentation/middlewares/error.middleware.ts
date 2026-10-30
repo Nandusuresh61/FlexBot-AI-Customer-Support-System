@@ -7,6 +7,9 @@ import type {
 import { ZodError } from "zod";
 import { AppError } from "../../domain/errors/app-error.js";
 import { env } from "../../config/env.js";
+import { HttpStatusCode } from "../../constants/httpStatusCode.js";
+import { AppMessage } from "../../constants/appMessage.js";
+import { ResponseHandler } from "../utils/responseHandler.js";
 
 export const errorMiddleware: ErrorRequestHandler = (
   error: unknown,
@@ -15,34 +18,32 @@ export const errorMiddleware: ErrorRequestHandler = (
   _next: NextFunction,
 ): void => {
   if (error instanceof ZodError) {
-    res.status(400).json({
-      success: false,
-      message: "Validation failed",
-      errors: error.issues.map((issue) => ({
+    ResponseHandler.error(
+      res,
+      HttpStatusCode.BAD_REQUEST,
+      AppMessage.VALIDATION_FAILED,
+      error.issues.map((issue) => ({
         field: issue.path.join("."),
         message: issue.message,
       })),
-    });
+    );
     return;
   }
 
   if (error instanceof AppError) {
-    res.status(error.statusCode).json({
-      success: false,
-      message: error.message,
-    });
+    ResponseHandler.error(res, error.statusCode, error.message);
     return;
   }
 
   console.error("Unexpected application error:", error);
 
-  res.status(500).json({
-    success: false,
-    message:
-      env.NODE_ENV === "production"
-        ? "Internal server error"
-        : error instanceof Error
-          ? error.message
-          : "An unexpected error occurred",
-  });
+  ResponseHandler.error(
+    res,
+    HttpStatusCode.INTERNAL_SERVER_ERROR,
+    env.NODE_ENV === "production"
+      ? AppMessage.INTERNAL_SERVER_ERROR
+      : error instanceof Error
+        ? error.message
+        : AppMessage.UNEXPECTED_ERROR,
+  );
 };

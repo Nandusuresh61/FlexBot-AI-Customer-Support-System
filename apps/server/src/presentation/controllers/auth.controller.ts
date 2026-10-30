@@ -1,199 +1,184 @@
-import type { Request, Response, NextFunction } from "express";
-import {
-  loginUserUseCase,
-  logoutAllSessionsUseCase,
-  logoutUserUseCase,
-  registerUserUseCase,
-  tokenService,
-} from "../../composition/container.js";
-import { AuthenticatedRequest } from "../middlewares/auth.middleware.js";
-
-import { createRefreshSessionUseCase } from "../../composition/container.js";
+import type { Request, Response, RequestHandler } from "express";
+import { HttpStatusCode } from "../../constants/httpStatusCode.js";
+import { AppMessage } from "../../constants/appMessage.js";
+import { ResponseHandler } from "../utils/responseHandler.js";
+import { asyncHandler } from "../middlewares/asyncHandler.js";
+import type { AuthenticatedRequest } from "../middlewares/auth.middleware.js";
 import { env } from "../../config/env.js";
 
-import { rotateRefreshTokenUseCase } from "../../composition/container.js";
+import type { RegisterUserUseCase } from "../../application/use-cases/register-user.use-case.js";
+import type { LoginUserUseCase } from "../../application/use-cases/login-user.use-case.js";
+import type { TokenService } from "../../application/interfaces/token-service.js";
+import type { CreateRefreshSessionUseCase } from "../../application/use-cases/create-refresh-session.use-case.js";
+import type { RotateRefreshTokenUseCase } from "../../application/use-cases/rotate-refresh-token.use-case.js";
+import type { LogoutUserUseCase } from "../../application/use-cases/logout-user.use-case.js";
+import type { LogoutAllSessionsUseCase } from "../../application/use-cases/logout-all-sessions.use-case.js";
 
 export class AuthController {
-  static async register(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    try {
-      const user = await registerUserUseCase.execute(req.body);
+  constructor(
+    private readonly _registerUserUseCase: RegisterUserUseCase,
+    private readonly _loginUserUseCase: LoginUserUseCase,
+    private readonly _tokenService: TokenService,
+    private readonly _createRefreshSessionUseCase: CreateRefreshSessionUseCase,
+    private readonly _rotateRefreshTokenUseCase: RotateRefreshTokenUseCase,
+    private readonly _logoutUserUseCase: LogoutUserUseCase,
+    private readonly _logoutAllSessionsUseCase: LogoutAllSessionsUseCase,
+  ) {}
 
-      res.status(201).json({
-        success: true,
-        message: "User registered successfully",
-        data: {
+  register = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const user = await this._registerUserUseCase.execute(req.body);
+
+    ResponseHandler.success(
+      res,
+      HttpStatusCode.CREATED,
+      AppMessage.USER_REGISTERED,
+      {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      },
+    );
+  });
+
+  login = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const user = await this._loginUserUseCase.execute(req.body);
+
+    const accessToken = await this._tokenService.generateAccessToken({
+      userId: user.id,
+    });
+
+    const refreshSession = await this._createRefreshSessionUseCase.execute({
+      userId: user.id,
+    });
+
+    res.cookie("refreshToken", refreshSession.refreshToken, {
+      httpOnly: true,
+      secure: env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/api/v1/auth",
+      expires: refreshSession.expiresAt,
+    });
+
+    ResponseHandler.success(
+      res,
+      HttpStatusCode.OK,
+      AppMessage.LOGIN_SUCCESS,
+      {
+        user: {
           id: user.id,
           name: user.name,
           email: user.email,
         },
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-  static async login(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    try {
-      const user = await loginUserUseCase.execute(req.body);
+        accessToken,
+        tokenType: "Bearer",
+        expiresIn: 900,
+      },
+    );
+  });
 
-      const accessToken = await tokenService.generateAccessToken({
-        userId: user.id,
-      });
-
-      const refreshSession = await createRefreshSessionUseCase.execute({
-        userId: user.id,
-      });
-
-      res.cookie("refreshToken", refreshSession.refreshToken, {
-        httpOnly: true,
-        secure: env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/api/v1/auth",
-        expires: refreshSession.expiresAt,
-      });
-
-      res.status(200).json({
-        success: true,
-        message: "Login successful",
-        data: {
-          user: {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-          },
-          accessToken,
-          tokenType: "Bearer",
-          expiresIn: 900,
-        },
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-  static async me(req: AuthenticatedRequest, res: Response): Promise<void> {
+  me = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     if (!req.auth) {
-      res.status(401).json({
-        success: false,
-        message: "Authentication required",
-      });
+      ResponseHandler.error(
+        res,
+        HttpStatusCode.UNAUTHORIZED,
+        AppMessage.AUTH_REQUIRED,
+      );
       return;
     }
 
-    res.status(200).json({
-      success: true,
-      message: "Authenticated user retrieved successfully",
-      data: {
+    ResponseHandler.success(
+      res,
+      HttpStatusCode.OK,
+      AppMessage.USER_RETRIEVED,
+      {
         userId: req.auth.userId,
       },
+    );
+  });
+
+  refresh = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const refreshToken: unknown = req.cookies?.refreshToken;
+
+    if (typeof refreshToken !== "string" || refreshToken.length === 0) {
+      ResponseHandler.error(
+        res,
+        HttpStatusCode.UNAUTHORIZED,
+        AppMessage.INVALID_OR_EXPIRED_REFRESH_TOKEN,
+      );
+      return;
+    }
+
+    const result = await this._rotateRefreshTokenUseCase.execute(refreshToken);
+
+    res.cookie("refreshToken", result.refreshToken, {
+      httpOnly: true,
+      secure: env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/api/v1/auth",
+      expires: result.expiresAt,
     });
-  }
-  static async refresh(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    try {
-      const refreshToken: unknown = req.cookies?.refreshToken;
 
-      if (typeof refreshToken !== "string" || refreshToken.length === 0) {
-        res.status(401).json({
-          success: false,
-          message: "Invalid or expired refresh token",
-        });
-        return;
-      }
-
-      const result = await rotateRefreshTokenUseCase.execute(refreshToken);
-
-      res.cookie("refreshToken", result.refreshToken, {
-        httpOnly: true,
-        secure: env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/api/v1/auth",
-        expires: result.expiresAt,
-      });
-
-      res.status(200).json({
-        success: true,
-        message: "Token refreshed successfully",
-        data: {
-          user: {
-            id: result.user.id,
-            name: result.user.name,
-            email: result.user.email,
-          },
-          accessToken: result.accessToken,
-          tokenType: "Bearer",
-          expiresIn: 900,
+    ResponseHandler.success(
+      res,
+      HttpStatusCode.OK,
+      AppMessage.TOKEN_REFRESHED,
+      {
+        user: {
+          id: result.user.id,
+          name: result.user.name,
+          email: result.user.email,
         },
-      });
-    } catch (error) {
-      next(error);
+        accessToken: result.accessToken,
+        tokenType: "Bearer",
+        expiresIn: 900,
+      },
+    );
+  });
+
+  logout = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const refreshToken: unknown = req.cookies?.refreshToken;
+
+    if (typeof refreshToken === "string" && refreshToken.length > 0) {
+      await this._logoutUserUseCase.execute(refreshToken);
     }
-  }
-  static async logout(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    try {
-      const refreshToken: unknown = req.cookies?.refreshToken;
 
-      if (typeof refreshToken === "string" && refreshToken.length > 0) {
-        await logoutUserUseCase.execute(refreshToken);
-      }
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/api/v1/auth",
+    });
 
-      res.clearCookie("refreshToken", {
-        httpOnly: true,
-        secure: env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/api/v1/auth",
-      });
+    ResponseHandler.success(
+      res,
+      HttpStatusCode.OK,
+      AppMessage.LOGOUT_SUCCESS,
+    );
+  });
 
-      res.status(200).json({
-        success: true,
-        message: "Logged out successfully",
-      });
-    } catch (error) {
-      next(error);
+  logoutAll = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    if (!req.auth) {
+      ResponseHandler.error(
+        res,
+        HttpStatusCode.UNAUTHORIZED,
+        AppMessage.AUTH_REQUIRED,
+      );
+      return;
     }
-  }
-  static async logoutAll(
-    req: AuthenticatedRequest,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    try {
-      if (!req.auth) {
-        res.status(401).json({
-          success: false,
-          message: "Authentication required",
-        });
-        return;
-      }
 
-      await logoutAllSessionsUseCase.execute(req.auth.userId);
+    await this._logoutAllSessionsUseCase.execute(req.auth.userId);
 
-      res.clearCookie("refreshToken", {
-        httpOnly: true,
-        secure: env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/api/v1/auth",
-      });
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/api/v1/auth",
+    });
 
-      res.status(200).json({
-        success: true,
-        message: "All sessions have been logged out",
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
+    ResponseHandler.success(
+      res,
+      HttpStatusCode.OK,
+      AppMessage.LOGOUT_ALL_SUCCESS,
+    );
+  });
 }

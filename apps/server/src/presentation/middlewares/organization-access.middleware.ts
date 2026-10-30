@@ -1,9 +1,14 @@
 import type { Request, Response, NextFunction } from "express";
-
 import { AppError } from "../../domain/errors/app-error.js";
-import { membershipRepository } from "../../composition/container.js";
+import {
+  membershipRepository,
+  organizationRepository,
+} from "../../composition/container.js";
 import type { AuthenticatedRequest } from "./auth.middleware.js";
-import { organizationRepository } from "../../composition/container.js";
+import { HttpStatusCode } from "../../constants/httpStatusCode.js";
+import { AppMessage } from "../../constants/appMessage.js";
+import { asyncHandler } from "./asyncHandler.js";
+
 export interface OrganizationAuthenticatedRequest extends AuthenticatedRequest {
   organizationAccess?: {
     organizationId: string;
@@ -12,23 +17,29 @@ export interface OrganizationAuthenticatedRequest extends AuthenticatedRequest {
   };
 }
 
-export async function organizationAccessMiddleware(
-  req: Request,
-  _res: Response,
-  next: NextFunction,
-): Promise<void> {
-  try {
+export const organizationAccessMiddleware = asyncHandler(
+  async (
+    req: Request,
+    _res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     const authenticatedReq = req as OrganizationAuthenticatedRequest;
     const userId = authenticatedReq.auth?.userId;
 
     if (!userId) {
-      throw new AppError("Authentication required", 401);
+      throw new AppError(
+        AppMessage.AUTH_REQUIRED,
+        HttpStatusCode.UNAUTHORIZED,
+      );
     }
 
     const organizationId = req.params.organizationId;
 
     if (typeof organizationId !== "string" || !organizationId.trim()) {
-      throw new AppError("A valid organization ID is required", 400);
+      throw new AppError(
+        AppMessage.ORGANIZATION_ID_REQUIRED,
+        HttpStatusCode.BAD_REQUEST,
+      );
     }
 
     const membership = await membershipRepository.findByUserAndOrganization(
@@ -37,22 +48,34 @@ export async function organizationAccessMiddleware(
     );
 
     if (!membership) {
-      throw new AppError("You do not have access to this organization", 403);
+      throw new AppError(
+        AppMessage.ORGANIZATION_ACCESS_DENIED,
+        HttpStatusCode.FORBIDDEN,
+      );
     }
 
     if (membership.status !== "ACTIVE") {
-      throw new AppError("Your organization membership is suspended", 403);
+      throw new AppError(
+        AppMessage.MEMBERSHIP_SUSPENDED,
+        HttpStatusCode.FORBIDDEN,
+      );
     }
 
     const organization =
       await organizationRepository.findById(organizationId);
 
     if (!organization) {
-      throw new AppError("Organization not found", 404);
+      throw new AppError(
+        AppMessage.ORGANIZATION_NOT_FOUND,
+        HttpStatusCode.NOT_FOUND,
+      );
     }
 
     if (organization.status !== "ACTIVE") {
-      throw new AppError("This organization is suspended", 403);
+      throw new AppError(
+        AppMessage.ORGANIZATION_SUSPENDED,
+        HttpStatusCode.FORBIDDEN,
+      );
     }
 
     authenticatedReq.organizationAccess = {
@@ -62,7 +85,5 @@ export async function organizationAccessMiddleware(
     };
 
     next();
-  } catch (error: unknown) {
-    next(error);
-  }
-}
+  },
+);

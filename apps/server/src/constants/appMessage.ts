@@ -61,6 +61,14 @@ export const AppMessage = {
   API_KEY_GENERATION_FAILED: "API key generation failed",
   INVALID_API_KEY: "Invalid or expired API key",
   API_KEY_AUTH_SUCCESS: "API key authenticated successfully",
+
+  // Chatbot Configuration
+  CHATBOT_CONFIG_CREATED: "Chatbot configuration created successfully",
+  CHATBOT_CONFIG_RETRIEVED: "Chatbot configuration retrieved successfully",
+  CHATBOT_CONFIG_UPDATED: "Chatbot configuration updated successfully",
+  CHATBOT_CONFIG_NOT_FOUND: "Chatbot configuration not found",
+  CHATBOT_CONFIG_ALREADY_EXISTS:
+    "Chatbot configuration already exists for this organization",
   // Common & Errors
   VALIDATION_FAILED: "Validation failed",
   INTERNAL_SERVER_ERROR: "Internal server error",

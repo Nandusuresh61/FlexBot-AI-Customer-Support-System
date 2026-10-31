@@ -69,6 +69,14 @@ export const AppMessage = {
   CHATBOT_CONFIG_NOT_FOUND: "Chatbot configuration not found",
   CHATBOT_CONFIG_ALREADY_EXISTS:
     "Chatbot configuration already exists for this organization",
+  CHAT_MESSAGE_REQUIRED: "A chat message is required",
+  CHAT_RESPONSE_GENERATED: "Chat response generated successfully",
+  // AI messages
+  CHATBOT_CONFIG_INACTIVE: "Chatbot configuration is inactive",
+  AI_PROVIDER_NOT_CONFIGURED: "AI provider is not configured",
+  AI_PROVIDER_UNSUPPORTED: "AI provider is not supported",
+  AI_RESPONSE_GENERATION_FAILED: "Failed to generate chatbot response",
+
   // Common & Errors
   VALIDATION_FAILED: "Validation failed",
   INTERNAL_SERVER_ERROR: "Internal server error",

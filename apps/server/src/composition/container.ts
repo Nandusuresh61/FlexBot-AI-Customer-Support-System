@@ -33,6 +33,9 @@ import { GetChatbotConfigUseCase } from "../application/use-cases/chatbot-config
 import { UpdateChatbotConfigUseCase } from "../application/use-cases/chatbot-config/update-chatbot-config.use-case.js";
 import { MongoChatbotConfigRepository } from "../infrastructure/database/repositories/mongo-chatbot.repository.js";
 import { ChatbotConfigController } from "../presentation/controllers/chatbot-config.controller.js";
+import { AIProviderFactory } from "../infrastructure/ai/ai-provider.factory.js";
+import { GenerateChatbotResponseUseCase } from "../application/use-cases/chatbot/generate-chatbot-response.use-case.js";
+import { ChatController } from "../presentation/controllers/chat.controller.js";
 
 export const organizationRepository = new MongoOrganizationRepository();
 export const membershipRepository = new MongoMembershipRepository();
@@ -171,4 +174,13 @@ export const chatbotConfigController = new ChatbotConfigController(
   createChatbotConfigUseCase,
   getChatbotConfigUseCase,
   updateChatbotConfigUseCase,
+);
+
+const generateChatbotResponseUseCase = new GenerateChatbotResponseUseCase(
+  chatbotConfigRepository,
+  (provider) => AIProviderFactory.create(provider),
+);
+
+export const chatController = new ChatController(
+  generateChatbotResponseUseCase,
 );

@@ -8,6 +8,7 @@ import { organizationAccessMiddleware } from "../middlewares/organization-access
 import { requireOrganizationRole } from "../middlewares/require-organization-role.middleware.js";
 import apiKeyRoutes from "./api-key.routes.js";
 import chatbotConfigRoutes from "./chatbot-config.routes.js";
+import chatRoutes from "./chat.routes.js";
 
 const organizationRouter = Router();
 
@@ -46,4 +47,7 @@ organizationRouter.delete(
 organizationRouter.use("/:organizationId/api-keys", apiKeyRoutes);
 
 organizationRouter.use("/:organizationId/chatbot-config", chatbotConfigRoutes);
+
+organizationRouter.use("/:organizationId/chat", chatRoutes);
+
 export default organizationRouter;

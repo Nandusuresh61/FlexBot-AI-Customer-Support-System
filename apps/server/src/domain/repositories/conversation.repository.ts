@@ -21,4 +21,10 @@ export interface ConversationRepository {
     organizationId: string,
     status: "ACTIVE" | "CLOSED",
   ): Promise<Conversation | null>;
+
+  findByIdAndOrganizationIdAndVisitorId(
+    id: string,
+    organizationId: string,
+    visitorId: string,
+  ): Promise<Conversation | null>;
 }

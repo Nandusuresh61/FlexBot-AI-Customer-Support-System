@@ -6,9 +6,7 @@ import type { Conversation } from "../../../domain/entities/conversation.entity.
 import { ConversationModel } from "../models/conversation.model.js";
 import { toConversationEntity } from "../mappers/conversation.mapper.js";
 
-export class MongoConversationRepository
-  implements ConversationRepository
-{
+export class MongoConversationRepository implements ConversationRepository {
   async create(input: CreateConversationInput): Promise<Conversation> {
     const document = await ConversationModel.create(input);
 
@@ -53,6 +51,24 @@ export class MongoConversationRepository
       { $set: { status } },
       { new: true, runValidators: true },
     ).lean();
+
+    return document
+      ? toConversationEntity(
+          document as Parameters<typeof toConversationEntity>[0],
+        )
+      : null;
+  }
+
+  async findByIdAndOrganizationIdAndVisitorId(
+    id: string,
+    organizationId: string,
+    visitorId: string,
+  ): Promise<Conversation | null> {
+    const document = await ConversationModel.findOne({
+      _id: id,
+      organizationId,
+      visitorId,
+    }).lean();
 
     return document
       ? toConversationEntity(

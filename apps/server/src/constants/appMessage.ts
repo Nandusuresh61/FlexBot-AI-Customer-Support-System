@@ -81,6 +81,7 @@ export const AppMessage = {
   CONVERSATION_CLOSED: "Conversation is closed",
   CONVERSATION_CREATED: "Conversation created successfully",
   CONVERSATION_MESSAGE_SAVED: "Message sent successfully",
+  CONVERSATION_MESSAGES_RETRIEVED: "Conversation messages retrieved successfully",
   // Common & Errors
   VALIDATION_FAILED: "Validation failed",
   INTERNAL_SERVER_ERROR: "Internal server error",

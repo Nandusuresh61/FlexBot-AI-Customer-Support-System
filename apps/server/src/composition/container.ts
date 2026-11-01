@@ -41,6 +41,8 @@ import { MongoConversationMessageRepository } from "../infrastructure/database/r
 import { CreateConversationUseCase } from "../application/use-cases/conversation/create-conversation.use-case.js";
 import { SendConversationMessageUseCase } from "../application/use-cases/conversation/send-conversation-message.use-case.js";
 import { ConversationController } from "../presentation/controllers/conversation.controller.js";
+import { get } from "node:http";
+import { GetConversationMessagesUseCase } from "../application/use-cases/conversation/get-conversation-message.use-case.js";
 
 export const organizationRepository = new MongoOrganizationRepository();
 export const membershipRepository = new MongoMembershipRepository();
@@ -205,7 +207,13 @@ const sendConversationMessageUseCase = new SendConversationMessageUseCase(
   (provider) => AIProviderFactory.create(provider),
 );
 
+const getConversationMessagesUseCase = new GetConversationMessagesUseCase(
+  conversationRepository,
+  conversationMessageRepository,
+);
+
 export const conversationController = new ConversationController(
   createConversationUseCase,
   sendConversationMessageUseCase,
+  getConversationMessagesUseCase,
 );

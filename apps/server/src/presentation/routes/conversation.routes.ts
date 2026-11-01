@@ -12,5 +12,6 @@ router.use(requireOrganizationRole("ORG_ADMIN", "ORG_MEMBER"));
 
 router.post("/", conversationController.create);
 router.post("/:conversationId/messages", conversationController.sendMessage);
+router.get("/:conversationId/messages", conversationController.getMessages);
 
 export default router;

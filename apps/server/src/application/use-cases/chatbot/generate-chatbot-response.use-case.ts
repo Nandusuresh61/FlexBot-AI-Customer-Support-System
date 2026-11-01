@@ -40,7 +40,7 @@ export class GenerateChatbotResponseUseCase {
 
     return provider.generateResponse({
       systemPrompt: config.systemPrompt,
-      userMessage: input.message,
+      messages: [{ role: "USER", content: input.message }],
       model: config.model,
       temperature: config.temperature,
       maxOutputTokens: config.maxOutputTokens,

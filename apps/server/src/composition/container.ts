@@ -36,6 +36,11 @@ import { ChatbotConfigController } from "../presentation/controllers/chatbot-con
 import { AIProviderFactory } from "../infrastructure/ai/ai-provider.factory.js";
 import { GenerateChatbotResponseUseCase } from "../application/use-cases/chatbot/generate-chatbot-response.use-case.js";
 import { ChatController } from "../presentation/controllers/chat.controller.js";
+import { MongoConversationRepository } from "../infrastructure/database/repositories/mongo-conversation.repository.js";
+import { MongoConversationMessageRepository } from "../infrastructure/database/repositories/mongo-conversation-message.repository.js";
+import { CreateConversationUseCase } from "../application/use-cases/conversation/create-conversation.use-case.js";
+import { SendConversationMessageUseCase } from "../application/use-cases/conversation/send-conversation-message.use-case.js";
+import { ConversationController } from "../presentation/controllers/conversation.controller.js";
 
 export const organizationRepository = new MongoOrganizationRepository();
 export const membershipRepository = new MongoMembershipRepository();
@@ -183,4 +188,24 @@ const generateChatbotResponseUseCase = new GenerateChatbotResponseUseCase(
 
 export const chatController = new ChatController(
   generateChatbotResponseUseCase,
+);
+
+const conversationRepository = new MongoConversationRepository();
+const conversationMessageRepository = new MongoConversationMessageRepository();
+
+const createConversationUseCase = new CreateConversationUseCase(
+  conversationRepository,
+  chatbotConfigRepository,
+);
+
+const sendConversationMessageUseCase = new SendConversationMessageUseCase(
+  conversationRepository,
+  conversationMessageRepository,
+  chatbotConfigRepository,
+  (provider) => AIProviderFactory.create(provider),
+);
+
+export const conversationController = new ConversationController(
+  createConversationUseCase,
+  sendConversationMessageUseCase,
 );

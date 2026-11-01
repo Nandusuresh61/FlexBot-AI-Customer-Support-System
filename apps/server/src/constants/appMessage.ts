@@ -76,7 +76,11 @@ export const AppMessage = {
   AI_PROVIDER_NOT_CONFIGURED: "AI provider is not configured",
   AI_PROVIDER_UNSUPPORTED: "AI provider is not supported",
   AI_RESPONSE_GENERATION_FAILED: "Failed to generate chatbot response",
-
+  // Conversation
+  CONVERSATION_NOT_FOUND: "Conversation not found",
+  CONVERSATION_CLOSED: "Conversation is closed",
+  CONVERSATION_CREATED: "Conversation created successfully",
+  CONVERSATION_MESSAGE_SAVED: "Message sent successfully",
   // Common & Errors
   VALIDATION_FAILED: "Validation failed",
   INTERNAL_SERVER_ERROR: "Internal server error",
@@ -84,6 +88,8 @@ export const AppMessage = {
   ROUTE_NOT_FOUND: (method: string, url: string) =>
     `Route not found: ${method} ${url}`,
   API_RUNNING: "FlexBot API is running",
+  VISITOR_ID_REQUIRED: "Visitor ID is required",
+  INVALID_REQUEST_PARAMETERS: "Invalid request parameters",
 } as const;
 
 export type AppMessageType = (typeof AppMessage)[keyof typeof AppMessage];

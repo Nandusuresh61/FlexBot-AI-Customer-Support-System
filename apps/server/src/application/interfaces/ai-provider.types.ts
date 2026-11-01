@@ -1,6 +1,13 @@
+export type AIMessageRole = "USER" | "ASSISTANT";
+
+export interface AIConversationMessage {
+  role: AIMessageRole;
+  content: string;
+}
+
 export interface GenerateResponseInput {
   systemPrompt: string;
-  userMessage: string;
+  messages: AIConversationMessage[];
   model: string;
   temperature: number;
   maxOutputTokens: number;

@@ -21,7 +21,13 @@ export class OpenAIProvider implements AIProvider {
         model: input.model,
         messages: [
           { role: "system", content: input.systemPrompt },
-          { role: "user", content: input.userMessage },
+          ...input.messages.map((message) => ({
+            role:
+              message.role === "USER"
+                ? ("user" as const)
+                : ("assistant" as const),
+            content: message.content,
+          })),
         ],
         temperature: input.temperature,
         max_tokens: input.maxOutputTokens,

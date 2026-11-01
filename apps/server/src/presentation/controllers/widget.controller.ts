@@ -7,12 +7,14 @@ import { HttpStatusCode } from "../../constants/httpStatusCode.js";
 import { asyncHandler } from "../middlewares/asyncHandler.js";
 import { ResponseHandler } from "../utils/responseHandler.js";
 import { GetWidgetConversationMessagesUseCase } from "../../application/use-cases/widget/get-widget-conversation-message.use-case.js";
+import { CloseWidgetConversationUseCase } from "../../application/use-cases/widget/close-widget-conversation.use-case.js";
 
 export class WidgetController {
   constructor(
     private readonly _createWidgetConversationUseCase: CreateWidgetConversationUseCase,
     private readonly _sendWidgetMessageUseCase: SendWidgetMessageUseCase,
     private readonly _getWidgetConversationMessagesUseCase: GetWidgetConversationMessagesUseCase,
+    private readonly _closeWidgetConversationUseCase: CloseWidgetConversationUseCase,
   ) {}
 
   createConversation = asyncHandler(
@@ -161,6 +163,47 @@ export class WidgetController {
         HttpStatusCode.OK,
         AppMessage.CONVERSATION_MESSAGES_FETCHED,
         messages,
+      );
+    },
+  );
+  closeConversation = asyncHandler(
+    async (req: ApiKeyAuthenticatedRequest, res: Response) => {
+      const { conversationId } = req.params;
+      const apiKeyAuth = req.apiKeyAuth;
+
+      if (
+        !apiKeyAuth ||
+        apiKeyAuth.type !== "PUBLIC" ||
+        typeof conversationId !== "string"
+      ) {
+        return ResponseHandler.error(
+          res,
+          HttpStatusCode.BAD_REQUEST,
+          AppMessage.INVALID_REQUEST_PARAMETERS,
+        );
+      }
+
+      const { visitorId } = req.body as { visitorId?: unknown };
+
+      if (typeof visitorId !== "string" || !visitorId.trim()) {
+        return ResponseHandler.error(
+          res,
+          HttpStatusCode.BAD_REQUEST,
+          AppMessage.VISITOR_ID_REQUIRED,
+        );
+      }
+
+      const conversation = await this._closeWidgetConversationUseCase.execute({
+        organizationId: apiKeyAuth.organizationId,
+        conversationId,
+        visitorId: visitorId.trim(),
+      });
+
+      return ResponseHandler.success(
+        res,
+        HttpStatusCode.OK,
+        AppMessage.CONVERSATION_CLOSED,
+        conversation,
       );
     },
   );

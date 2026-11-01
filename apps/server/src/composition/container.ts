@@ -10,7 +10,6 @@ import { LoginUserUseCase } from "../application/use-cases/login-user.use-case.j
 import { JwtTokenService } from "../infrastructure/security/jwt-token.service.js";
 import { CryptoRefreshTokenService } from "../infrastructure/security/crypto-refresh-token.service.js";
 import { CreateRefreshSessionUseCase } from "../application/use-cases/create-refresh-session.use-case.js";
-
 import { MongoRefreshSessionRepository } from "../infrastructure/database/repositories/mongo-refresh-session.repository.js";
 import { SuspendOrganizationMemberUseCase } from "../application/use-cases/suspend-organization-member.use-case.js";
 import { env } from "../config/env.js";
@@ -41,8 +40,11 @@ import { MongoConversationMessageRepository } from "../infrastructure/database/r
 import { CreateConversationUseCase } from "../application/use-cases/conversation/create-conversation.use-case.js";
 import { SendConversationMessageUseCase } from "../application/use-cases/conversation/send-conversation-message.use-case.js";
 import { ConversationController } from "../presentation/controllers/conversation.controller.js";
-import { get } from "node:http";
 import { GetConversationMessagesUseCase } from "../application/use-cases/conversation/get-conversation-message.use-case.js";
+import { CreateWidgetConversationUseCase } from "../application/use-cases/widget/create-widget-conversation.use-case.js";
+import { SendWidgetMessageUseCase } from "../application/use-cases/widget/send-widget-message.use-case.js";
+import { WidgetController } from "../presentation/controllers/widget.controller.js";
+import { GetWidgetConversationMessagesUseCase } from "../application/use-cases/widget/get-widget-conversation-message.use-case.js";
 
 export const organizationRepository = new MongoOrganizationRepository();
 export const membershipRepository = new MongoMembershipRepository();
@@ -216,4 +218,28 @@ export const conversationController = new ConversationController(
   createConversationUseCase,
   sendConversationMessageUseCase,
   getConversationMessagesUseCase,
+);
+
+const createWidgetConversationUseCase = new CreateWidgetConversationUseCase(
+  conversationRepository,
+  chatbotConfigRepository,
+);
+
+const sendWidgetMessageUseCase = new SendWidgetMessageUseCase(
+  conversationRepository,
+  conversationMessageRepository,
+  chatbotConfigRepository,
+  (provider) => AIProviderFactory.create(provider),
+);
+
+const getWidgetConversationMessagesUseCase =
+  new GetWidgetConversationMessagesUseCase(
+    conversationRepository,
+    conversationMessageRepository,
+  );
+
+export const widgetController = new WidgetController(
+  createWidgetConversationUseCase,
+  sendWidgetMessageUseCase,
+  getWidgetConversationMessagesUseCase,
 );

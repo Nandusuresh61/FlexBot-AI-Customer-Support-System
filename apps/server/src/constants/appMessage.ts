@@ -82,6 +82,10 @@ export const AppMessage = {
   CONVERSATION_CREATED: "Conversation created successfully",
   CONVERSATION_MESSAGE_SAVED: "Message sent successfully",
   CONVERSATION_MESSAGES_RETRIEVED: "Conversation messages retrieved successfully",
+  // Widget
+  CONVERSATION_MESSAGES_FETCHED: "Widget conversation messages fetched successfully",
+  WIDGET_CONVERSATION_NOT_FOUND: "Widget conversation not found",
+  WIDGET_CONVERSATION_CLOSED: "Widget conversation is closed",
   // Common & Errors
   VALIDATION_FAILED: "Validation failed",
   INTERNAL_SERVER_ERROR: "Internal server error",

@@ -80,3 +80,29 @@ npm run dev
 ```
 
 For more detailed architectural specifications, data models, and system design, see the documentation in [docs/FlexBot_Project_Reference.md](file:///home/oxynub/Projects/flexbot/docs/FlexBot_Project_Reference.md).
+
+
+After all this you have any doubts? Here it Solves.
+
+Imagine an ecommerce company integrates FlexBot into its website.
+
+A customer visits the website and asks:
+Where is my order? I placed it three days ago.
+
+The chatbot should understand the question, retrieve relevant information, and generate a helpful response.
+
+Another customer asks:
+What is your return policy?
+
+The chatbot should answer based on the company's actual return policy, not invent an answer.
+
+This is the main goal of FlexBot.
+
+Our chatbot should:
+- Understand natural language.
+- Answer questions using company-specific information.
+- Maintain conversation context.
+- Support multiple organizations.
+- Provide accurate responses based on available knowledge.
+- Integrate with external applications.
+- Support different AI models in the future.

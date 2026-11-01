@@ -21,19 +21,31 @@ import { GetOrganizationMembersUseCase } from "../application/use-cases/get-orga
 import { AuthController } from "../presentation/controllers/auth.controller.js";
 import { OrganizationController } from "../presentation/controllers/organization.controller.js";
 import { MembershipController } from "../presentation/controllers/membership.controller.js";
-
 import { CreateApiKeyUseCase } from "../application/use-cases/create-api-key.use-case.js";
 import { ListApiKeysUseCase } from "../application/use-cases/list-api-keys.use-case.js";
 import { RevokeApiKeyUseCase } from "../application/use-cases/revoke-api-key.use-case.js";
-
 import { ApiKeyController } from "../presentation/controllers/api-key.controller.js";
 import { MongoApiKeyRepository } from "../infrastructure/database/repositories/mongo-api-key.repository.js";
 import { ApiKeyGenerator } from "../infrastructure/security/api-key-generator.js";
+import { ExternalController } from "../presentation/controllers/external.controller.js";
+import { CreateChatbotConfigUseCase } from "../application/use-cases/chatbot-config/create-chatbot-config.use-case.js";
+import { GetChatbotConfigUseCase } from "../application/use-cases/chatbot-config/get-chatbot-config.use-case.js";
+import { UpdateChatbotConfigUseCase } from "../application/use-cases/chatbot-config/update-chatbot-config.use-case.js";
+import { MongoChatbotConfigRepository } from "../infrastructure/database/repositories/mongo-chatbot.repository.js";
+import { ChatbotConfigController } from "../presentation/controllers/chatbot-config.controller.js";
+import { AIProviderFactory } from "../infrastructure/ai/ai-provider.factory.js";
+import { GenerateChatbotResponseUseCase } from "../application/use-cases/chatbot/generate-chatbot-response.use-case.js";
+import { ChatController } from "../presentation/controllers/chat.controller.js";
+import { MongoConversationRepository } from "../infrastructure/database/repositories/mongo-conversation.repository.js";
+import { MongoConversationMessageRepository } from "../infrastructure/database/repositories/mongo-conversation-message.repository.js";
+import { CreateConversationUseCase } from "../application/use-cases/conversation/create-conversation.use-case.js";
+import { SendConversationMessageUseCase } from "../application/use-cases/conversation/send-conversation-message.use-case.js";
+import { ConversationController } from "../presentation/controllers/conversation.controller.js";
+import { get } from "node:http";
+import { GetConversationMessagesUseCase } from "../application/use-cases/conversation/get-conversation-message.use-case.js";
+
 export const organizationRepository = new MongoOrganizationRepository();
 export const membershipRepository = new MongoMembershipRepository();
-import { ExternalController } from "../presentation/controllers/external.controller.js";
-
-
 export const externalController = new ExternalController();
 
 export const apiKeyRepository = new MongoApiKeyRepository();
@@ -146,4 +158,62 @@ export const apiKeyController = new ApiKeyController(
   createApiKeyUseCase,
   listApiKeysUseCase,
   revokeApiKeyUseCase,
+);
+
+const chatbotConfigRepository = new MongoChatbotConfigRepository();
+
+const createChatbotConfigUseCase = new CreateChatbotConfigUseCase(
+  chatbotConfigRepository,
+  organizationRepository,
+);
+
+const getChatbotConfigUseCase = new GetChatbotConfigUseCase(
+  chatbotConfigRepository,
+  organizationRepository,
+);
+
+const updateChatbotConfigUseCase = new UpdateChatbotConfigUseCase(
+  chatbotConfigRepository,
+  organizationRepository,
+);
+
+export const chatbotConfigController = new ChatbotConfigController(
+  createChatbotConfigUseCase,
+  getChatbotConfigUseCase,
+  updateChatbotConfigUseCase,
+);
+
+const generateChatbotResponseUseCase = new GenerateChatbotResponseUseCase(
+  chatbotConfigRepository,
+  (provider) => AIProviderFactory.create(provider),
+);
+
+export const chatController = new ChatController(
+  generateChatbotResponseUseCase,
+);
+
+const conversationRepository = new MongoConversationRepository();
+const conversationMessageRepository = new MongoConversationMessageRepository();
+
+const createConversationUseCase = new CreateConversationUseCase(
+  conversationRepository,
+  chatbotConfigRepository,
+);
+
+const sendConversationMessageUseCase = new SendConversationMessageUseCase(
+  conversationRepository,
+  conversationMessageRepository,
+  chatbotConfigRepository,
+  (provider) => AIProviderFactory.create(provider),
+);
+
+const getConversationMessagesUseCase = new GetConversationMessagesUseCase(
+  conversationRepository,
+  conversationMessageRepository,
+);
+
+export const conversationController = new ConversationController(
+  createConversationUseCase,
+  sendConversationMessageUseCase,
+  getConversationMessagesUseCase,
 );

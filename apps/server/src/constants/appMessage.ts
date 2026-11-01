@@ -61,6 +61,27 @@ export const AppMessage = {
   API_KEY_GENERATION_FAILED: "API key generation failed",
   INVALID_API_KEY: "Invalid or expired API key",
   API_KEY_AUTH_SUCCESS: "API key authenticated successfully",
+
+  // Chatbot Configuration
+  CHATBOT_CONFIG_CREATED: "Chatbot configuration created successfully",
+  CHATBOT_CONFIG_RETRIEVED: "Chatbot configuration retrieved successfully",
+  CHATBOT_CONFIG_UPDATED: "Chatbot configuration updated successfully",
+  CHATBOT_CONFIG_NOT_FOUND: "Chatbot configuration not found",
+  CHATBOT_CONFIG_ALREADY_EXISTS:
+    "Chatbot configuration already exists for this organization",
+  CHAT_MESSAGE_REQUIRED: "A chat message is required",
+  CHAT_RESPONSE_GENERATED: "Chat response generated successfully",
+  // AI messages
+  CHATBOT_CONFIG_INACTIVE: "Chatbot configuration is inactive",
+  AI_PROVIDER_NOT_CONFIGURED: "AI provider is not configured",
+  AI_PROVIDER_UNSUPPORTED: "AI provider is not supported",
+  AI_RESPONSE_GENERATION_FAILED: "Failed to generate chatbot response",
+  // Conversation
+  CONVERSATION_NOT_FOUND: "Conversation not found",
+  CONVERSATION_CLOSED: "Conversation is closed",
+  CONVERSATION_CREATED: "Conversation created successfully",
+  CONVERSATION_MESSAGE_SAVED: "Message sent successfully",
+  CONVERSATION_MESSAGES_RETRIEVED: "Conversation messages retrieved successfully",
   // Common & Errors
   VALIDATION_FAILED: "Validation failed",
   INTERNAL_SERVER_ERROR: "Internal server error",
@@ -68,6 +89,8 @@ export const AppMessage = {
   ROUTE_NOT_FOUND: (method: string, url: string) =>
     `Route not found: ${method} ${url}`,
   API_RUNNING: "FlexBot API is running",
+  VISITOR_ID_REQUIRED: "Visitor ID is required",
+  INVALID_REQUEST_PARAMETERS: "Invalid request parameters",
 } as const;
 
 export type AppMessageType = (typeof AppMessage)[keyof typeof AppMessage];

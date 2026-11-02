@@ -6,6 +6,18 @@ export interface CreateConversationInput {
   visitorId: string;
 }
 
+export interface ListConversationsInput {
+  organizationId: string;
+  status?: "ACTIVE" | "CLOSED";
+  page: number;
+  limit: number;
+}
+
+export interface ListConversationsResult {
+  conversations: Conversation[];
+  total: number;
+}
+
 export interface ConversationRepository {
   create(input: CreateConversationInput): Promise<Conversation>;
 
@@ -27,4 +39,8 @@ export interface ConversationRepository {
     organizationId: string,
     visitorId: string,
   ): Promise<Conversation | null>;
+
+  listByOrganization(
+    input: ListConversationsInput,
+  ): Promise<ListConversationsResult>;
 }

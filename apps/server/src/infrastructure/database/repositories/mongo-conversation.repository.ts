@@ -1,6 +1,8 @@
 import type {
   ConversationRepository,
   CreateConversationInput,
+  ListConversationsInput,
+  ListConversationsResult,
 } from "../../../domain/repositories/conversation.repository.js";
 import type { Conversation } from "../../../domain/entities/conversation.entity.js";
 import { ConversationModel } from "../models/conversation.model.js";
@@ -75,5 +77,41 @@ export class MongoConversationRepository implements ConversationRepository {
           document as Parameters<typeof toConversationEntity>[0],
         )
       : null;
+  }
+
+  async listByOrganization(
+    input: ListConversationsInput,
+  ): Promise<ListConversationsResult> {
+    const filter: {
+      organizationId: string;
+      status?: "ACTIVE" | "CLOSED";
+    } = {
+      organizationId: input.organizationId,
+    };
+
+    if (input.status) {
+      filter.status = input.status;
+    }
+
+    const skip = (input.page - 1) * input.limit;
+
+    const [documents, total] = await Promise.all([
+      ConversationModel.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(input.limit)
+        .lean(),
+
+      ConversationModel.countDocuments(filter),
+    ]);
+
+    return {
+      conversations: documents.map((document) =>
+        toConversationEntity(
+          document as Parameters<typeof toConversationEntity>[0],
+        ),
+      ),
+      total,
+    };
   }
 }

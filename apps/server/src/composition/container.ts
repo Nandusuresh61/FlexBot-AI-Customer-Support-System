@@ -47,6 +47,7 @@ import { WidgetController } from "../presentation/controllers/widget.controller.
 import { GetWidgetConversationMessagesUseCase } from "../application/use-cases/widget/get-widget-conversation-message.use-case.js";
 import { CloseWidgetConversationUseCase } from "../application/use-cases/widget/close-widget-conversation.use-case.js";
 import { ListConversationsUseCase } from "../application/use-cases/conversation/list-conversation.use-case.js";
+import { GetConversationDetailsUseCase } from "../application/use-cases/conversation/get-conversation-details.use-case.js";
 
 export const organizationRepository = new MongoOrganizationRepository();
 export const membershipRepository = new MongoMembershipRepository();
@@ -220,11 +221,15 @@ const listConversationsUseCase = new ListConversationsUseCase(
   conversationRepository,
 );
 
+const getConversationDetailsUseCase =
+  new GetConversationDetailsUseCase(conversationRepository);
+
 export const conversationController = new ConversationController(
   createConversationUseCase,
   sendConversationMessageUseCase,
   getConversationMessagesUseCase,
   listConversationsUseCase,
+  getConversationDetailsUseCase,
 );
 
 const createWidgetConversationUseCase = new CreateWidgetConversationUseCase(

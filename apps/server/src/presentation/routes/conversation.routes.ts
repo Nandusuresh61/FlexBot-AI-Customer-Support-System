@@ -18,4 +18,9 @@ router.get(
   requireOrganizationRole("ORG_ADMIN", "ORG_MEMBER"),
   conversationController.listConversations,
 );
+router.get(
+  "/:conversationId",
+  requireOrganizationRole("ORG_ADMIN", "ORG_MEMBER"),
+  conversationController.getDetails,
+);
 export default router;

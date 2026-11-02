@@ -8,13 +8,14 @@ import { ResponseHandler } from "../utils/responseHandler.js";
 import { GetConversationMessagesUseCase } from "../../application/use-cases/conversation/get-conversation-message.use-case.js";
 import { ListConversationsUseCase } from "../../application/use-cases/conversation/list-conversation.use-case.js";
 import { AuthenticatedRequest } from "../middlewares/auth.middleware.js";
-
+import { GetConversationDetailsUseCase } from "../../application/use-cases/conversation/get-conversation-details.use-case.js";
 export class ConversationController {
   constructor(
     private readonly _createConversationUseCase: CreateConversationUseCase,
     private readonly _sendConversationMessageUseCase: SendConversationMessageUseCase,
     private readonly _getConversationMessagesUseCase: GetConversationMessagesUseCase,
     private readonly _listConversationsUseCase: ListConversationsUseCase,
+    private readonly _getConversationDetailsUseCase: GetConversationDetailsUseCase,
   ) {}
 
   create = asyncHandler(async (req: Request, res: Response) => {
@@ -204,5 +205,34 @@ export class ConversationController {
         },
       );
     },
-  );    
+  );
+
+  getDetails = asyncHandler(
+    async (req: AuthenticatedRequest, res: Response) => {
+      const { organizationId, conversationId } = req.params;
+
+      if (
+        typeof organizationId !== "string" ||
+        typeof conversationId !== "string"
+      ) {
+        return ResponseHandler.error(
+          res,
+          HttpStatusCode.BAD_REQUEST,
+          AppMessage.INVALID_REQUEST_PARAMETERS,
+        );
+      }
+
+      const conversation = await this._getConversationDetailsUseCase.execute({
+        organizationId,
+        conversationId,
+      });
+
+      return ResponseHandler.success(
+        res,
+        HttpStatusCode.OK,
+        AppMessage.CONVERSATIONS_FETCHED,
+        conversation,
+      );
+    },
+  );
 }

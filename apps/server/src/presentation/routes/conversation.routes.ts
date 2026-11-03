@@ -23,4 +23,11 @@ router.get(
   requireOrganizationRole("ORG_ADMIN", "ORG_MEMBER"),
   conversationController.getDetails,
 );
+
+router.get(
+  "/stats",
+  requireOrganizationRole("ORG_ADMIN", "ORG_MEMBER"),
+  conversationController.getStats,
+);
+
 export default router;

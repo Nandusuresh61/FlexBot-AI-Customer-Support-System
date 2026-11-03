@@ -9,6 +9,8 @@ import { GetConversationMessagesUseCase } from "../../application/use-cases/conv
 import { ListConversationsUseCase } from "../../application/use-cases/conversation/list-conversation.use-case.js";
 import { AuthenticatedRequest } from "../middlewares/auth.middleware.js";
 import { GetConversationDetailsUseCase } from "../../application/use-cases/conversation/get-conversation-details.use-case.js";
+import { GetConversationStatsUseCase } from "../../application/use-cases/conversation/get-conversation-stats.use-case.js";
+
 export class ConversationController {
   constructor(
     private readonly _createConversationUseCase: CreateConversationUseCase,
@@ -16,6 +18,7 @@ export class ConversationController {
     private readonly _getConversationMessagesUseCase: GetConversationMessagesUseCase,
     private readonly _listConversationsUseCase: ListConversationsUseCase,
     private readonly _getConversationDetailsUseCase: GetConversationDetailsUseCase,
+    private readonly _getConversationStatsUseCase: GetConversationStatsUseCase,
   ) {}
 
   create = asyncHandler(async (req: Request, res: Response) => {
@@ -249,4 +252,26 @@ export class ConversationController {
       );
     },
   );
+
+  getStats = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const { organizationId } = req.params;
+
+    if (typeof organizationId !== "string") {
+      return ResponseHandler.error(
+        res,
+        HttpStatusCode.BAD_REQUEST,
+        AppMessage.INVALID_REQUEST_PARAMETERS,
+      );
+    }
+
+    const stats =
+      await this._getConversationStatsUseCase.execute(organizationId);
+
+    return ResponseHandler.success(
+      res,
+      HttpStatusCode.OK,
+      AppMessage.CONVERSATION_STATS_FETCHED,
+      stats,
+    );
+  });
 }

@@ -48,7 +48,7 @@ import { GetWidgetConversationMessagesUseCase } from "../application/use-cases/w
 import { CloseWidgetConversationUseCase } from "../application/use-cases/widget/close-widget-conversation.use-case.js";
 import { ListConversationsUseCase } from "../application/use-cases/conversation/list-conversation.use-case.js";
 import { GetConversationDetailsUseCase } from "../application/use-cases/conversation/get-conversation-details.use-case.js";
-
+import { GetConversationStatsUseCase } from "../application/use-cases/conversation/get-conversation-stats.use-case.js";
 export const organizationRepository = new MongoOrganizationRepository();
 export const membershipRepository = new MongoMembershipRepository();
 export const externalController = new ExternalController();
@@ -224,12 +224,17 @@ const listConversationsUseCase = new ListConversationsUseCase(
 const getConversationDetailsUseCase =
   new GetConversationDetailsUseCase(conversationRepository);
 
+const getConversationStatsUseCase = new GetConversationStatsUseCase(
+  conversationRepository
+);
+
 export const conversationController = new ConversationController(
   createConversationUseCase,
   sendConversationMessageUseCase,
   getConversationMessagesUseCase,
   listConversationsUseCase,
   getConversationDetailsUseCase,
+  getConversationStatsUseCase
 );
 
 const createWidgetConversationUseCase = new CreateWidgetConversationUseCase(

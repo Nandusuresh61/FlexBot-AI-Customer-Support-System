@@ -30,6 +30,8 @@ export interface ApiKeyRepository {
   findActiveSecretByHash(keyHash: string): Promise<ApiKey | null>;
 
   updateLastUsedAt(id: string, usedAt: Date): Promise<void>;
+
+  findActivePublicByHash(keyHash: string): Promise<ApiKey | null>;
 }
 
 export interface ApiKeySummary {

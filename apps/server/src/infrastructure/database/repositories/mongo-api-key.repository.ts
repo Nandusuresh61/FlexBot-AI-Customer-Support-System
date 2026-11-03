@@ -124,4 +124,15 @@ export class MongoApiKeyRepository implements ApiKeyRepository {
       },
     );
   }
+
+  async findActivePublicByHash(keyHash: string): Promise<ApiKey | null> {
+    const document = await ApiKeyModel.findOne({
+      keyHash,
+      type: "PUBLIC",
+      status: "ACTIVE",
+      $or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }],
+    }).select("+keyHash");
+
+    return document ? toApiKeyEntity(document) : null;
+  }
 }

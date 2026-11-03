@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
-
+import widgetRoutes from "./presentation/routes/widget.routes.js";
 import { notFoundMiddleware } from "./presentation/middlewares/not-found.middleware.js";
 import { errorMiddleware } from "./presentation/middlewares/error.middleware.js";
 import organizationRouter from "./presentation/routes/organization.routes.js";
@@ -22,7 +22,7 @@ app.use(cookieParser());
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/organizations", organizationRouter);
 app.use("/api/v1/external", externalRoutes);
-
+app.use("/api/v1/widget", widgetRoutes);
 app.get("/api/v1/health", (_req, res) => {
   ResponseHandler.success(
     res,

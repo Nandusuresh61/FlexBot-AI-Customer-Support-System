@@ -35,6 +35,7 @@ export class ListConversationsUseCase {
 
     return this._conversationRepository.listByOrganization({
       organizationId: input.organizationId,
+      visitorId: input.visitorId?.trim() || undefined,
       status: input.status,
       page,
       limit,

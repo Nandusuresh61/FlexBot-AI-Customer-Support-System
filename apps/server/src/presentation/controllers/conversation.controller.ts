@@ -147,6 +147,7 @@ export class ConversationController {
       const rawPage = req.query.page;
       const rawLimit = req.query.limit;
       const rawStatus = req.query.status;
+      const rawVisitorId = req.query.visitorId;
 
       const parsePositiveInteger = (value: unknown): number | undefined => {
         if (value === undefined) return undefined;
@@ -183,8 +184,21 @@ export class ConversationController {
         );
       }
 
+      if (
+        rawVisitorId !== undefined &&
+        (typeof rawVisitorId !== "string" || !rawVisitorId.trim())
+      ) {
+        return ResponseHandler.error(
+          res,
+          HttpStatusCode.BAD_REQUEST,
+          AppMessage.INVALID_REQUEST_PARAMETERS,
+        );
+      }
+
       const result = await this._listConversationsUseCase.execute({
         organizationId,
+        visitorId:
+          typeof rawVisitorId === "string" ? rawVisitorId.trim() : undefined,
         page: page ?? 1,
         limit: limit ?? 20,
         status: rawStatus as "ACTIVE" | "CLOSED" | undefined,

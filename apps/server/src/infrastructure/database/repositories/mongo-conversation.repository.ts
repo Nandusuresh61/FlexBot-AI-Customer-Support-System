@@ -84,10 +84,15 @@ export class MongoConversationRepository implements ConversationRepository {
   ): Promise<ListConversationsResult> {
     const filter: {
       organizationId: string;
+      visitorId?: string;
       status?: "ACTIVE" | "CLOSED";
     } = {
       organizationId: input.organizationId,
     };
+
+    if (input.visitorId) {
+      filter.visitorId = input.visitorId;
+    }
 
     if (input.status) {
       filter.status = input.status;

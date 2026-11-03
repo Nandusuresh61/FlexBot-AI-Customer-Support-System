@@ -8,6 +8,7 @@ export interface CreateConversationInput {
 
 export interface ListConversationsInput {
   organizationId: string;
+  visitorId?: string;
   status?: "ACTIVE" | "CLOSED";
   page: number;
   limit: number;

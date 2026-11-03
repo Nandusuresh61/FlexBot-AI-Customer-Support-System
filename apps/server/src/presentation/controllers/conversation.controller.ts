@@ -10,7 +10,7 @@ import { ListConversationsUseCase } from "../../application/use-cases/conversati
 import { AuthenticatedRequest } from "../middlewares/auth.middleware.js";
 import { GetConversationDetailsUseCase } from "../../application/use-cases/conversation/get-conversation-details.use-case.js";
 import { GetConversationStatsUseCase } from "../../application/use-cases/conversation/get-conversation-stats.use-case.js";
-
+import { GetConversationTimelineUseCase } from "../../application/use-cases/conversation/get-conversation-timeline.use-case.js";
 export class ConversationController {
   constructor(
     private readonly _createConversationUseCase: CreateConversationUseCase,
@@ -19,6 +19,7 @@ export class ConversationController {
     private readonly _listConversationsUseCase: ListConversationsUseCase,
     private readonly _getConversationDetailsUseCase: GetConversationDetailsUseCase,
     private readonly _getConversationStatsUseCase: GetConversationStatsUseCase,
+    private readonly _getConversationTimeline: GetConversationTimelineUseCase,
   ) {}
 
   create = asyncHandler(async (req: Request, res: Response) => {
@@ -272,6 +273,45 @@ export class ConversationController {
       HttpStatusCode.OK,
       AppMessage.CONVERSATION_STATS_FETCHED,
       stats,
+    );
+  });
+
+  getTimeline = asyncHandler(async (req: Request, res: Response) => {
+    const { organizationId } = req.params;
+    const { from, to } = req.query;
+
+    if (
+      typeof from !== "string" ||
+      typeof to !== "string" ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(from) ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(to)
+    ) {
+      return ResponseHandler.error(
+        res,
+        HttpStatusCode.BAD_REQUEST,
+        "Provide valid from and to dates in YYYY-MM-DD format.",
+      );
+    }
+
+    if (typeof organizationId !== "string") {
+      return ResponseHandler.error(
+        res,
+        HttpStatusCode.BAD_REQUEST,
+        AppMessage.ORGANIZATION_ID_REQUIRED,
+      );
+    }
+
+    const timeline = await this._getConversationTimeline.execute({
+      organizationId,
+      from,
+      to,
+    });
+
+    return ResponseHandler.success(
+      res,
+      HttpStatusCode.OK,
+      AppMessage.CONVERSATION_TIMELINE_FETCHED,
+      timeline,
     );
   });
 }

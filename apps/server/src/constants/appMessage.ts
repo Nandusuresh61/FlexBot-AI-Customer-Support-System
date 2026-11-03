@@ -85,6 +85,7 @@ export const AppMessage = {
   CONVERSATIONS_LISTED: "Conversations listed successfully",
   CONVERSATIONS_FETCHED: "Conversations fetched successfully",
   CONVERSATION_STATS_FETCHED: "Conversation stats fetched successfully",
+  CONVERSATION_TIMELINE_FETCHED: "Conversation timeline fetched successfully",
   // Widget
   CONVERSATION_MESSAGES_FETCHED: "Widget conversation messages fetched successfully",
   WIDGET_CONVERSATION_NOT_FOUND: "Widget conversation not found",

@@ -1,6 +1,7 @@
 import type {
   ConversationRepository,
   ConversationStats,
+  ConversationTimelineItem,
   CreateConversationInput,
   ListConversationsInput,
   ListConversationsResult,
@@ -8,6 +9,7 @@ import type {
 import type { Conversation } from "../../../domain/entities/conversation.entity.js";
 import { ConversationModel } from "../models/conversation.model.js";
 import { toConversationEntity } from "../mappers/conversation.mapper.js";
+import { Types } from "mongoose";
 
 export class MongoConversationRepository implements ConversationRepository {
   async create(input: CreateConversationInput): Promise<Conversation> {
@@ -157,5 +159,48 @@ export class MongoConversationRepository implements ConversationRepository {
     ]);
 
     return result ?? { total: 0, active: 0, closed: 0 };
+  }
+
+  async getTimelineByOrganization(
+    organizationId: string,
+    from: Date,
+    to: Date,
+  ): Promise<ConversationTimelineItem[]> {
+    const results = await ConversationModel.aggregate<{
+      date: string;
+      count: number;
+    }>([
+      {
+        $match: {
+          organizationId: new Types.ObjectId(organizationId),
+          createdAt: {
+            $gte: from,
+            $lte: to,
+          },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$createdAt",
+              timezone: "UTC",
+            },
+          },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          date: "$_id",
+          count: 1,
+        },
+      },
+      { $sort: { date: 1 } },
+    ]);
+
+    return results;
   }
 }

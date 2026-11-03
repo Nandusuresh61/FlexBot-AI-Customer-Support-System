@@ -30,4 +30,12 @@ router.get(
   conversationController.getStats,
 );
 
+router.get(
+  "/stats/timeline",
+  authMiddleware,
+  organizationAccessMiddleware,
+  requireOrganizationRole("ORG_ADMIN"),
+  conversationController.getTimeline,
+);
+
 export default router;

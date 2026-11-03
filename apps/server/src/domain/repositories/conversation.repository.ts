@@ -25,6 +25,11 @@ export interface ConversationStats {
   closed: number;
 }
 
+export interface ConversationTimelineItem {
+  date: string;
+  count: number;
+}
+
 export interface ConversationRepository {
   create(input: CreateConversationInput): Promise<Conversation>;
 
@@ -52,4 +57,10 @@ export interface ConversationRepository {
   ): Promise<ListConversationsResult>;
 
   getStatsByOrganization(organizationId: string): Promise<ConversationStats>;
+
+  getTimelineByOrganization(
+    organizationId: string,
+    from: Date,
+    to: Date,
+  ): Promise<ConversationTimelineItem[]>;
 }

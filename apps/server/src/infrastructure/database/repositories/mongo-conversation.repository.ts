@@ -1,5 +1,6 @@
 import type {
   ConversationRepository,
+  ConversationStats,
   CreateConversationInput,
   ListConversationsInput,
   ListConversationsResult,
@@ -118,5 +119,43 @@ export class MongoConversationRepository implements ConversationRepository {
       ),
       total,
     };
+  }
+
+  async getStatsByOrganization(
+    organizationId: string,
+  ): Promise<ConversationStats> {
+    const [result] = await ConversationModel.aggregate<ConversationStats>([
+      {
+        $match: {
+          organizationId,
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          active: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "ACTIVE"] }, 1, 0],
+            },
+          },
+          closed: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "CLOSED"] }, 1, 0],
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          total: 1,
+          active: 1,
+          closed: 1,
+        },
+      },
+    ]);
+
+    return result ?? { total: 0, active: 0, closed: 0 };
   }
 }

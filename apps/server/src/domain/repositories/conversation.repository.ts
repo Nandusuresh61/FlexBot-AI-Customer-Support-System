@@ -19,6 +19,12 @@ export interface ListConversationsResult {
   total: number;
 }
 
+export interface ConversationStats {
+  total: number;
+  active: number;
+  closed: number;
+}
+
 export interface ConversationRepository {
   create(input: CreateConversationInput): Promise<Conversation>;
 
@@ -44,4 +50,6 @@ export interface ConversationRepository {
   listByOrganization(
     input: ListConversationsInput,
   ): Promise<ListConversationsResult>;
+
+  getStatsByOrganization(organizationId: string): Promise<ConversationStats>;
 }

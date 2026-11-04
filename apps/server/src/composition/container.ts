@@ -50,6 +50,9 @@ import { ListConversationsUseCase } from "../application/use-cases/conversation/
 import { GetConversationDetailsUseCase } from "../application/use-cases/conversation/get-conversation-details.use-case.js";
 import { GetConversationStatsUseCase } from "../application/use-cases/conversation/get-conversation-stats.use-case.js";
 import { GetConversationTimelineUseCase } from "../application/use-cases/conversation/get-conversation-timeline.use-case.js";
+import { KnowledgeDocumentController } from "../presentation/controllers/knowledge-document.controller.js";
+import { CreateKnowledgeDocumentUseCase } from "../application/use-cases/knowledge-document/create-knowledge-document.use-case.js";
+import { MongoKnowledgeDocumentRepository } from "../infrastructure/database/repositories/mongo-knowledge-document.repository.js";
 
 export const organizationRepository = new MongoOrganizationRepository();
 export const membershipRepository = new MongoMembershipRepository();
@@ -271,3 +274,15 @@ export const widgetController = new WidgetController(
   getWidgetConversationMessagesUseCase,
   closeWidgetConversationUseCase,
 );
+
+export const knowledgeDocumentRepository =
+  new MongoKnowledgeDocumentRepository();
+
+export const createKnowledgeDocumentUseCase =
+  new CreateKnowledgeDocumentUseCase(
+    knowledgeDocumentRepository,
+    chatbotConfigRepository,
+  );
+
+export const knowledgeDocumentController =
+  new KnowledgeDocumentController(createKnowledgeDocumentUseCase);

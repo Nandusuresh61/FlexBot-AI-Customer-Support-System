@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   organizationController,
   membershipController,
+  knowledgeDocumentController,
 } from "../../composition/container.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 import { organizationAccessMiddleware } from "../middlewares/organization-access.middleware.js";
@@ -10,6 +11,7 @@ import apiKeyRoutes from "./api-key.routes.js";
 import chatbotConfigRoutes from "./chatbot-config.routes.js";
 import chatRoutes from "./chat.routes.js";
 import conversationRoutes from "./conversation.routes.js";
+import { uploadKnowledgeDocument } from "../middlewares/knowledge-document-upload.middleware.js";
 
 const organizationRouter = Router();
 
@@ -53,4 +55,12 @@ organizationRouter.use("/:organizationId/chat", chatRoutes);
 
 organizationRouter.use("/:organizationId/conversations", conversationRoutes);
 
+organizationRouter.post(
+  "/organizations/:organizationId/knowledge-documents",
+  authMiddleware,
+  organizationAccessMiddleware,
+  requireOrganizationRole("ORG_ADMIN"),
+  uploadKnowledgeDocument,
+  knowledgeDocumentController.create,
+);
 export default organizationRouter;

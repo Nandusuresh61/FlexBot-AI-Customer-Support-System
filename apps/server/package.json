@@ -23,6 +23,7 @@
     "helmet": "^8.3.0",
     "jose": "^6.2.12",
     "mongoose": "^9.11.2",
+    "multer": "^2.5.0",
     "openai": "^6.49.0",
     "zod": "^4.6.7"
   },
@@ -31,6 +32,7 @@
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
+    "@types/multer": "^2.3.0",
     "@types/node": "^26.6.5",
     "@types/supertest": "^7.2.1",
     "supertest": "^7.3.1",

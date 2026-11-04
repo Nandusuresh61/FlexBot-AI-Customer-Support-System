@@ -90,6 +90,9 @@ export const AppMessage = {
   CONVERSATION_MESSAGES_FETCHED: "Widget conversation messages fetched successfully",
   WIDGET_CONVERSATION_NOT_FOUND: "Widget conversation not found",
   WIDGET_CONVERSATION_CLOSED: "Widget conversation is closed",
+  // Knowledge Document
+  UNSUPPORTED_FILE_TYPE: "Unsupported file type. Upload PDF, TXT, or Markdown files.",
+  KNOWLEDGE_DOCUMENT_CREATED: "Knowledge document created successfully",
   // Common & Errors
   VALIDATION_FAILED: "Validation failed",
   INTERNAL_SERVER_ERROR: "Internal server error",

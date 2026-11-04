@@ -53,6 +53,7 @@ import { GetConversationTimelineUseCase } from "../application/use-cases/convers
 import { KnowledgeDocumentController } from "../presentation/controllers/knowledge-document.controller.js";
 import { CreateKnowledgeDocumentUseCase } from "../application/use-cases/knowledge-document/create-knowledge-document.use-case.js";
 import { MongoKnowledgeDocumentRepository } from "../infrastructure/database/repositories/mongo-knowledge-document.repository.js";
+import { S3FileStorageService } from "../infrastructure/storage/s3-file-storage.service.js";
 
 export const organizationRepository = new MongoOrganizationRepository();
 export const membershipRepository = new MongoMembershipRepository();
@@ -278,10 +279,13 @@ export const widgetController = new WidgetController(
 export const knowledgeDocumentRepository =
   new MongoKnowledgeDocumentRepository();
 
+export const fileStorageService = new S3FileStorageService();
+
 export const createKnowledgeDocumentUseCase =
   new CreateKnowledgeDocumentUseCase(
     knowledgeDocumentRepository,
     chatbotConfigRepository,
+    fileStorageService,
   );
 
 export const knowledgeDocumentController = new KnowledgeDocumentController(

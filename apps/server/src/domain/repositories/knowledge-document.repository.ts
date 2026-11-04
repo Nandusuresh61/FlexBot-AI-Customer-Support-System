@@ -6,6 +6,7 @@ export interface CreateKnowledgeDocumentInput {
   fileName: string;
   mimeType: string;
   fileSize: number;
+  storageKey: string;
 }
 
 export interface KnowledgeDocumentRepository {

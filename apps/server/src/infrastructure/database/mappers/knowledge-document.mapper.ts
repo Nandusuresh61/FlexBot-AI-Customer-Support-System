@@ -17,6 +17,7 @@ export class KnowledgeDocumentMapper {
       fileName: doc.fileName,
       mimeType: doc.mimeType,
       fileSize: doc.fileSize,
+      storageKey: doc.storageKey,
       status: doc.status,
       chunkCount: doc.chunkCount,
       createdAt: doc.createdAt,

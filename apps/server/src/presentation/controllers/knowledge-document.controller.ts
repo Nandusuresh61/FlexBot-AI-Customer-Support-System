@@ -48,6 +48,7 @@ export class KnowledgeDocumentController {
       fileName: file.originalname,
       mimeType: file.mimetype,
       fileSize: file.size,
+      buffer: file.buffer,
     });
 
     return ResponseHandler.success(

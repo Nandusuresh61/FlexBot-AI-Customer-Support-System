@@ -28,6 +28,10 @@ const knowledgeDocumentSchema = new Schema(
       required: true,
       min: 1,
     },
+    storageKey: {
+      type: String,
+      required: true,
+    },
     status: {
       type: String,
       enum: ["UPLOADED", "PROCESSING", "READY", "FAILED"],

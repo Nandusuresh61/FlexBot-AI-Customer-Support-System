@@ -11,6 +11,7 @@ export interface KnowledgeDocumentProps {
   fileName: string;
   mimeType: string;
   fileSize: number;
+  storageKey: string;
   status: KnowledgeDocumentStatus;
   chunkCount: number;
   createdAt: Date;
@@ -42,6 +43,10 @@ export class KnowledgeDocument {
 
   get fileSize(): number {
     return this.props.fileSize;
+  }
+
+  get storageKey(): string {
+    return this.props.storageKey;
   }
 
   get status(): KnowledgeDocumentStatus {

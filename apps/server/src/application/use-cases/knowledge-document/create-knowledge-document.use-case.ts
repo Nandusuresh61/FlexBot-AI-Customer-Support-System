@@ -46,6 +46,13 @@ export class CreateKnowledgeDocumentUseCase {
       );
     }
 
+    if (config.status !== "ACTIVE") {
+      throw new AppError(
+        AppMessage.CHATBOT_CONFIG_INACTIVE,
+        HttpStatusCode.BAD_REQUEST,
+      );
+    }
+
     return this._knowledgeDocumentRepository.create({
       organizationId,
       chatbotConfigId,

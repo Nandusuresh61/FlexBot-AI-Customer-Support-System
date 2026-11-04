@@ -56,7 +56,7 @@ organizationRouter.use("/:organizationId/chat", chatRoutes);
 organizationRouter.use("/:organizationId/conversations", conversationRoutes);
 
 organizationRouter.post(
-  "/organizations/:organizationId/knowledge-documents",
+  "/:organizationId/knowledge-documents",
   authMiddleware,
   organizationAccessMiddleware,
   requireOrganizationRole("ORG_ADMIN"),

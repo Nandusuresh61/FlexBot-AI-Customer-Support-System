@@ -226,11 +226,12 @@ const listConversationsUseCase = new ListConversationsUseCase(
   conversationRepository,
 );
 
-const getConversationDetailsUseCase =
-  new GetConversationDetailsUseCase(conversationRepository);
+const getConversationDetailsUseCase = new GetConversationDetailsUseCase(
+  conversationRepository,
+);
 
 const getConversationStatsUseCase = new GetConversationStatsUseCase(
-  conversationRepository
+  conversationRepository,
 );
 
 export const getConversationTimelineUseCase =
@@ -274,7 +275,6 @@ export const widgetController = new WidgetController(
   getWidgetConversationMessagesUseCase,
   closeWidgetConversationUseCase,
 );
-
 export const knowledgeDocumentRepository =
   new MongoKnowledgeDocumentRepository();
 
@@ -284,5 +284,6 @@ export const createKnowledgeDocumentUseCase =
     chatbotConfigRepository,
   );
 
-export const knowledgeDocumentController =
-  new KnowledgeDocumentController(createKnowledgeDocumentUseCase);
+export const knowledgeDocumentController = new KnowledgeDocumentController(
+  createKnowledgeDocumentUseCase,
+);

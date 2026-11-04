@@ -19,7 +19,7 @@ export const AppMessage = {
   USER_NOT_FOUND: "User not found",
   USER_INACTIVE: "User account is not active",
   USER_NOT_FOUND_OR_INACTIVE: "User not found or inactive",
-
+  INVALID_INPUT: "Invalid input data",
   // Super Admin
   SUPER_ADMIN_REQUIRED: "Super Admin access required",
 

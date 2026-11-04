@@ -54,7 +54,7 @@ import { KnowledgeDocumentController } from "../presentation/controllers/knowled
 import { CreateKnowledgeDocumentUseCase } from "../application/use-cases/knowledge-document/create-knowledge-document.use-case.js";
 import { MongoKnowledgeDocumentRepository } from "../infrastructure/database/repositories/mongo-knowledge-document.repository.js";
 import { S3FileStorageService } from "../infrastructure/storage/s3-file-storage.service.js";
-
+import { DefaultDocumentTextExtractorService } from "../infrastructure/document-processing/document-text-extractor.service.js";
 export const organizationRepository = new MongoOrganizationRepository();
 export const membershipRepository = new MongoMembershipRepository();
 export const externalController = new ExternalController();
@@ -281,11 +281,15 @@ export const knowledgeDocumentRepository =
 
 export const fileStorageService = new S3FileStorageService();
 
+export const documentTextExtractorService =
+  new DefaultDocumentTextExtractorService();
+
 export const createKnowledgeDocumentUseCase =
   new CreateKnowledgeDocumentUseCase(
     knowledgeDocumentRepository,
     chatbotConfigRepository,
     fileStorageService,
+    documentTextExtractorService,
   );
 
 export const knowledgeDocumentController = new KnowledgeDocumentController(

@@ -4,7 +4,8 @@ import type { ChatbotConfigRepository } from "../../../domain/repositories/chatb
 import { AppError } from "../../../domain/errors/app-error.js";
 import { HttpStatusCode } from "../../../constants/httpStatusCode.js";
 import { AppMessage } from "../../../constants/appMessage.js";
-import { FileStorageService } from "../../../application/services/file-storage.service.js";
+import type { FileStorageService } from "../../services/file-storage.service.js";
+import type { DocumentTextExtractorService } from "../../services/document-text-extractor.service.js";
 
 interface CreateKnowledgeDocumentInput {
   organizationId: string;
@@ -20,6 +21,7 @@ export class CreateKnowledgeDocumentUseCase {
     private readonly _knowledgeDocumentRepository: KnowledgeDocumentRepository,
     private readonly _chatbotConfigRepository: ChatbotConfigRepository,
     private readonly _fileStorageService: FileStorageService,
+    private readonly _documentTextExtractorService: DocumentTextExtractorService,
   ) {}
 
   async execute(
@@ -63,12 +65,20 @@ export class CreateKnowledgeDocumentUseCase {
       );
     }
 
+    // Validate that the uploaded document contains extractable text.
+    const _extractedText = await this._documentTextExtractorService.extract({
+      buffer,
+      mimeType,
+    });
+
+    // Upload the original document to S3.
     const { storageKey } = await this._fileStorageService.store({
       buffer,
       mimeType,
       organizationId,
     });
 
+    // Save document metadata in MongoDB.
     try {
       return await this._knowledgeDocumentRepository.create({
         organizationId,
@@ -79,6 +89,7 @@ export class CreateKnowledgeDocumentUseCase {
         storageKey,
       });
     } catch (error) {
+      // Remove the S3 object if metadata persistence fails.
       try {
         await this._fileStorageService.delete(storageKey);
       } catch {

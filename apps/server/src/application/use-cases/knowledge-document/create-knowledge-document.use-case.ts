@@ -6,6 +6,8 @@ import { HttpStatusCode } from "../../../constants/httpStatusCode.js";
 import { AppMessage } from "../../../constants/appMessage.js";
 import type { FileStorageService } from "../../services/file-storage.service.js";
 import type { DocumentTextExtractorService } from "../../services/document-text-extractor.service.js";
+import type { KnowledgeChunkRepository } from "../../../domain/repositories/knowledge-chunk.repository.js";
+import type { TextChunkerService } from "../../services/text-chunker.service.js";
 
 interface CreateKnowledgeDocumentInput {
   organizationId: string;
@@ -22,6 +24,8 @@ export class CreateKnowledgeDocumentUseCase {
     private readonly _chatbotConfigRepository: ChatbotConfigRepository,
     private readonly _fileStorageService: FileStorageService,
     private readonly _documentTextExtractorService: DocumentTextExtractorService,
+    private readonly _knowledgeChunkRepository: KnowledgeChunkRepository,
+    private readonly _textChunkerService: TextChunkerService,
   ) {}
 
   async execute(
@@ -65,37 +69,44 @@ export class CreateKnowledgeDocumentUseCase {
       );
     }
 
-    // Validate that the uploaded document contains extractable text.
-    const _extractedText = await this._documentTextExtractorService.extract({
+    const extractedText = await this._documentTextExtractorService.extract({
       buffer,
       mimeType,
     });
 
-    // Upload the original document to S3.
     const { storageKey } = await this._fileStorageService.store({
       buffer,
       mimeType,
       organizationId,
     });
 
-    // Save document metadata in MongoDB.
     try {
-      return await this._knowledgeDocumentRepository.create({
+      const document = await this._knowledgeDocumentRepository.create({
         organizationId,
         chatbotConfigId,
-        fileName: fileName.trim(),
+        fileName,
         mimeType,
         fileSize,
         storageKey,
       });
-    } catch (error) {
-      // Remove the S3 object if metadata persistence fails.
-      try {
-        await this._fileStorageService.delete(storageKey);
-      } catch {
-        // Preserve the original database error.
-      }
 
+      const chunkContents = this._textChunkerService.chunk({
+        text: extractedText,
+      });
+
+      const chunks = chunkContents.map((content, chunkIndex) => ({
+        organizationId,
+        chatbotConfigId,
+        documentId: document.id,
+        chunkIndex,
+        content,
+      }));
+
+      await this._knowledgeChunkRepository.createMany(chunks);
+
+      return document;
+    } catch (error) {
+      await this._fileStorageService.delete(storageKey);
       throw error;
     }
   }

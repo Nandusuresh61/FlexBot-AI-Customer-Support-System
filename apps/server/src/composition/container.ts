@@ -55,6 +55,8 @@ import { CreateKnowledgeDocumentUseCase } from "../application/use-cases/knowled
 import { MongoKnowledgeDocumentRepository } from "../infrastructure/database/repositories/mongo-knowledge-document.repository.js";
 import { S3FileStorageService } from "../infrastructure/storage/s3-file-storage.service.js";
 import { DefaultDocumentTextExtractorService } from "../infrastructure/document-processing/document-text-extractor.service.js";
+import { MongoKnowledgeChunkRepository } from "../infrastructure/database/repositories/mongo-knowledge-chunk.repository.js";
+import { DefaultTextChunkerService } from "../infrastructure/document-processing/text-chunker.service.js";
 export const organizationRepository = new MongoOrganizationRepository();
 export const membershipRepository = new MongoMembershipRepository();
 export const externalController = new ExternalController();
@@ -284,12 +286,17 @@ export const fileStorageService = new S3FileStorageService();
 export const documentTextExtractorService =
   new DefaultDocumentTextExtractorService();
 
+export const knowledgeChunkRepository = new MongoKnowledgeChunkRepository();
+export const textChunkerService = new DefaultTextChunkerService();
+
 export const createKnowledgeDocumentUseCase =
   new CreateKnowledgeDocumentUseCase(
     knowledgeDocumentRepository,
     chatbotConfigRepository,
     fileStorageService,
     documentTextExtractorService,
+    knowledgeChunkRepository,
+    textChunkerService
   );
 
 export const knowledgeDocumentController = new KnowledgeDocumentController(

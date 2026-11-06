@@ -19,7 +19,6 @@ export interface KnowledgeDocumentRepository {
     updatedAt?: Date,
   ): Promise<KnowledgeDocument>;
 
-
   findById(id: string): Promise<KnowledgeDocument | null>;
 
   findByIdAndOrganizationId(

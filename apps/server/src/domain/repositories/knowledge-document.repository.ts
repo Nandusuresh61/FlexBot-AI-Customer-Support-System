@@ -9,6 +9,7 @@ export interface CreateKnowledgeDocumentInput {
   storageKey: string;
 }
 
+
 export interface KnowledgeDocumentRepository {
   create(
     input: CreateKnowledgeDocumentInput,

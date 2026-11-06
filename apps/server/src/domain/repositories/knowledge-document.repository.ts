@@ -21,7 +21,6 @@ export interface KnowledgeDocumentRepository {
 
 
   findById(id: string): Promise<KnowledgeDocument | null>;
-  
 
   findByIdAndOrganizationId(
     id: string,

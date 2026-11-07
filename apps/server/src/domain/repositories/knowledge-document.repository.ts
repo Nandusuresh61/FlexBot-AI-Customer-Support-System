@@ -31,10 +31,11 @@ export interface KnowledgeDocumentRepository {
   ): Promise<KnowledgeDocument[]>;
 
   updateStatus(
-    id: string,
-    status: KnowledgeDocument["status"],
-    chunkCount?: number,
-  ): Promise<KnowledgeDocument | null>;
+  id: string,
+  organizationId: string,
+  status: KnowledgeDocument["status"],
+  chunkCount?: number,
+): Promise<KnowledgeDocument | null>;
 
   delete(id: string, organizationId: string): Promise<boolean>;
 }

@@ -81,27 +81,30 @@ export class MongoKnowledgeDocumentRepository implements KnowledgeDocumentReposi
   }
 
   async updateStatus(
-    id: string,
-    status: KnowledgeDocument["status"],
-    chunkCount?: number,
-  ): Promise<KnowledgeDocument | null> {
-    if (!Types.ObjectId.isValid(id)) return null;
+  id: string,
+  organizationId: string,
+  status: KnowledgeDocument["status"],
+  chunkCount?: number,
+): Promise<KnowledgeDocument | null> {
+  const updatedDocument =
+    await KnowledgeDocumentModel.findOneAndUpdate(
+      {
+        _id: id,
+        organizationId,
+      },
+      {
+        $set: {
+          status,
+          ...(chunkCount !== undefined && { chunkCount }),
+        },
+      },
+      { new: true },
+    );
 
-    const update: Record<string, unknown> = { status };
-    if (chunkCount !== undefined) update.chunkCount = chunkCount;
-
-    const doc = await KnowledgeDocumentModel.findByIdAndUpdate(
-      id,
-      { $set: update },
-      { new: true, runValidators: true },
-    ).lean();
-
-    return doc
-      ? KnowledgeDocumentMapper.toDomain(
-          doc as Parameters<typeof KnowledgeDocumentMapper.toDomain>[0],
-        )
-      : null;
-  }
+  return updatedDocument
+    ? KnowledgeDocumentMapper.toDomain(updatedDocument)
+    : null;
+}
 
   async delete(id: string, organizationId: string): Promise<boolean> {
     if (

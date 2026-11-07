@@ -69,44 +69,114 @@ export class CreateKnowledgeDocumentUseCase {
       );
     }
 
-    const extractedText = await this._documentTextExtractorService.extract({
-      buffer,
-      mimeType,
-    });
-
-    const { storageKey } = await this._fileStorageService.store({
-      buffer,
-      mimeType,
-      organizationId,
-    });
+    let storageKey: string | null = null;
+    let document: KnowledgeDocument | null = null;
 
     try {
-      const document = await this._knowledgeDocumentRepository.create({
-        organizationId,
-        chatbotConfigId,
-        fileName,
+      // 1. Store original document in S3
+      const storedFile = await this._fileStorageService.store({
+        buffer,
         mimeType,
-        fileSize,
-        storageKey,
+        organizationId,
       });
 
+      storageKey = storedFile.storageKey;
+
+      // 2. Create document with PROCESSING status
+      document = await this._knowledgeDocumentRepository.create(
+        {
+          organizationId,
+          chatbotConfigId,
+          fileName,
+          mimeType,
+          fileSize,
+          storageKey,
+        },
+        undefined,
+        "PROCESSING",
+        0,
+      );
+
+      // 3. Extract text
+      const extractedText = await this._documentTextExtractorService.extract({
+        buffer,
+        mimeType,
+      });
+
+      // 4. Split text into chunks
       const chunkContents = this._textChunkerService.chunk({
         text: extractedText,
       });
 
+      if (chunkContents.length === 0) {
+        throw new AppError(
+          AppMessage.INVALID_INPUT,
+          HttpStatusCode.BAD_REQUEST,
+        );
+      }
+
+      // 5. Prepare chunks
       const chunks = chunkContents.map((content, chunkIndex) => ({
         organizationId,
         chatbotConfigId,
-        documentId: document.id,
+        documentId: document!.id,
         chunkIndex,
         content,
       }));
 
+      // 6. Persist chunks
       await this._knowledgeChunkRepository.createMany(chunks);
 
-      return document;
+      // 7. Mark document as READY
+      const updatedDocument =
+        await this._knowledgeDocumentRepository.updateStatus(
+          document.id,
+          organizationId,
+          "READY",
+          chunks.length,
+        );
+
+      if (!updatedDocument) {
+        throw new Error("Failed to update knowledge document status.");
+      }
+
+      return updatedDocument;
     } catch (error) {
-      await this._fileStorageService.delete(storageKey);
+      // Cleanup partially created chunks
+      if (document) {
+        try {
+          await this._knowledgeChunkRepository.deleteByDocumentId(
+            document.id,
+            organizationId,
+          );
+        } catch {
+          // Preserve original processing error
+        }
+      }
+
+      // Cleanup original file
+      if (storageKey) {
+        try {
+          await this._fileStorageService.delete(storageKey);
+        } catch {
+          // Preserve original processing error
+        }
+      }
+
+      // Mark document as FAILED
+      if (document) {
+        try {
+          await this._knowledgeDocumentRepository.updateStatus(
+            document.id,
+            organizationId,
+            "FAILED",
+            0,
+          );
+        } catch {
+          // Preserve original processing error
+        }
+      }
+
       throw error;
     }
   }

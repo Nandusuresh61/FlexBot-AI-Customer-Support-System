@@ -19,7 +19,7 @@ export const AppMessage = {
   USER_NOT_FOUND: "User not found",
   USER_INACTIVE: "User account is not active",
   USER_NOT_FOUND_OR_INACTIVE: "User not found or inactive",
-
+  INVALID_INPUT: "Invalid input data",
   // Super Admin
   SUPER_ADMIN_REQUIRED: "Super Admin access required",
 
@@ -90,6 +90,9 @@ export const AppMessage = {
   CONVERSATION_MESSAGES_FETCHED: "Widget conversation messages fetched successfully",
   WIDGET_CONVERSATION_NOT_FOUND: "Widget conversation not found",
   WIDGET_CONVERSATION_CLOSED: "Widget conversation is closed",
+  // Knowledge Document
+  UNSUPPORTED_FILE_TYPE: "Unsupported file type. Upload PDF, TXT, or Markdown files.",
+  KNOWLEDGE_DOCUMENT_CREATED: "Knowledge document created successfully",
   // Common & Errors
   VALIDATION_FAILED: "Validation failed",
   INTERNAL_SERVER_ERROR: "Internal server error",

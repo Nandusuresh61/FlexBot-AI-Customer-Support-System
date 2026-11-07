@@ -50,7 +50,13 @@ import { ListConversationsUseCase } from "../application/use-cases/conversation/
 import { GetConversationDetailsUseCase } from "../application/use-cases/conversation/get-conversation-details.use-case.js";
 import { GetConversationStatsUseCase } from "../application/use-cases/conversation/get-conversation-stats.use-case.js";
 import { GetConversationTimelineUseCase } from "../application/use-cases/conversation/get-conversation-timeline.use-case.js";
-
+import { KnowledgeDocumentController } from "../presentation/controllers/knowledge-document.controller.js";
+import { CreateKnowledgeDocumentUseCase } from "../application/use-cases/knowledge-document/create-knowledge-document.use-case.js";
+import { MongoKnowledgeDocumentRepository } from "../infrastructure/database/repositories/mongo-knowledge-document.repository.js";
+import { S3FileStorageService } from "../infrastructure/storage/s3-file-storage.service.js";
+import { DefaultDocumentTextExtractorService } from "../infrastructure/document-processing/document-text-extractor.service.js";
+import { MongoKnowledgeChunkRepository } from "../infrastructure/database/repositories/mongo-knowledge-chunk.repository.js";
+import { DefaultTextChunkerService } from "../infrastructure/document-processing/text-chunker.service.js";
 export const organizationRepository = new MongoOrganizationRepository();
 export const membershipRepository = new MongoMembershipRepository();
 export const externalController = new ExternalController();
@@ -223,11 +229,12 @@ const listConversationsUseCase = new ListConversationsUseCase(
   conversationRepository,
 );
 
-const getConversationDetailsUseCase =
-  new GetConversationDetailsUseCase(conversationRepository);
+const getConversationDetailsUseCase = new GetConversationDetailsUseCase(
+  conversationRepository,
+);
 
 const getConversationStatsUseCase = new GetConversationStatsUseCase(
-  conversationRepository
+  conversationRepository,
 );
 
 export const getConversationTimelineUseCase =
@@ -270,4 +277,28 @@ export const widgetController = new WidgetController(
   sendWidgetMessageUseCase,
   getWidgetConversationMessagesUseCase,
   closeWidgetConversationUseCase,
+);
+export const knowledgeDocumentRepository =
+  new MongoKnowledgeDocumentRepository();
+
+export const fileStorageService = new S3FileStorageService();
+
+export const documentTextExtractorService =
+  new DefaultDocumentTextExtractorService();
+
+export const knowledgeChunkRepository = new MongoKnowledgeChunkRepository();
+export const textChunkerService = new DefaultTextChunkerService();
+
+export const createKnowledgeDocumentUseCase =
+  new CreateKnowledgeDocumentUseCase(
+    knowledgeDocumentRepository,
+    chatbotConfigRepository,
+    fileStorageService,
+    documentTextExtractorService,
+    knowledgeChunkRepository,
+    textChunkerService
+  );
+
+export const knowledgeDocumentController = new KnowledgeDocumentController(
+  createKnowledgeDocumentUseCase,
 );
